@@ -1,18 +1,28 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: postgres
+
+  db:
+    image: postgres
     restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 2g
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
     environment:
-      POSTGRES_DB: your_db_name
-      POSTGRES_USER: your_db_user
-      POSTGRES_PASSWORD: your_db_password
+      POSTGRES_PASSWORD: example
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - 5432:5432
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
 
   imgproxy:
     image: darthsim/imgproxy:latest
@@ -20,13 +30,13 @@ services:
     restart: always
     environment:
       IMGPROXY_BIND: ":8080"
-      IMGPROXY_KEY: "your_imgproxy_key"
-      IMGPROXY_SALT: "your_imgproxy_salt"
+      IMGPROXY_KEY: ""
+      IMGPROXY_SALT: ""
       IMGPROXY_LOCAL_FILESYSTEM_ROOT: "/images"
     ports:
-      - "8080:8080"
+      - "8082:8080"
     volumes:
-      - ./your_images_folder:/images:ro
+      - ${LOCAL_IMAGES_DIR}:/images:ro
 
 volumes:
   postgres_data:
