@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: your_db_name
+      POSTGRES_USER: your_db_user
+      POSTGRES_PASSWORD: your_db_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  imgproxy:
+    image: darthsim/imgproxy:latest
+    container_name: imgproxy
+    restart: always
+    environment:
+      IMGPROXY_BIND: ":8080"
+      IMGPROXY_KEY: "your_imgproxy_key"
+      IMGPROXY_SALT: "your_imgproxy_salt"
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: "/images"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./your_images_folder:/images:ro
+
+volumes:
+  postgres_data:
