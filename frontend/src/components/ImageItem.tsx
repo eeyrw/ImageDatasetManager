@@ -1,7 +1,6 @@
-// src/components/ImageItem.tsx
-export default function ImageItem({ src }: { src: string }) {
+export default function ImageItem({ src, onClick }: { src: string; onClick?: () => void }) {
   return (
-    <div className="image-item">
+    <div className="image-item" onClick={onClick}>
       <img src={src} loading="lazy" />
     </div>
   );

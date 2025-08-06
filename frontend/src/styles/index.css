@@ -1,4 +1,3 @@
-// src/styles/index.css
 body {
   font-family: sans-serif;
   margin: 0;
@@ -23,12 +22,14 @@ body {
 }
 #image-container {
   margin: 120px 16px 32px 16px;
+  flex: 1;
 }
 .image-item img {
   width: 100%;
   display: block;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 button {
   padding: 6px 12px;
@@ -68,4 +69,16 @@ select {
   font-size: 14px;
   z-index: 1000;
   user-select: none;
+}
+.main-layout {
+  display: flex;
+  flex-direction: row;
+}
+.side-panel {
+  width: 300px;
+  padding: 16px;
+  background: #ffffffdd;
+  border-left: 1px solid #ccc;
+  font-size: 14px;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.05);
 }
