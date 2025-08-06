@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
-import imagesLoaded from 'imagesloaded';
-import Macy from 'macy';
+import Masonry from 'react-masonry-css';
 
 type ImageInfo = {
   id: string;
@@ -25,55 +24,15 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(false);
-  const macyRef = useRef<Macy | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // 初始化 Macy
-  useEffect(() => {
-    if (macyRef.current === null) {
-      macyRef.current = new Macy({
-        container: '#image-container',
-        trueOrder: false,
-        waitForImages: true,
-        margin: 16,
-        columns: 6,
-        breakAt: {
-          1600: 6,
-          1200: 5,
-          992: 4,
-          768: 3,
-          576: 2,
-          0: 1
-        }
-      });
-    }
-  }, []);
-
-  // 强制重排 Macy
-  const recalculateMacy = () => {
-    if (macyRef.current) {
-      macyRef.current.recalculate(true);
-    }
-  };
-
-  // 监听滚动容器变化时触发重排
-  useEffect(() => {
-    const scrollContainer = document.querySelector('.image-scroll-container');
-    if (!scrollContainer) return;
-
-    scrollContainer.addEventListener('scroll', recalculateMacy);
-    return () => {
-      scrollContainer.removeEventListener('scroll', recalculateMacy);
-    };
-  }, []);
-
-  // 加载图片数据
   useEffect(() => {
     if (!collection || selectedIds.length === 0) {
       setImages([]);
       setTotalPages(1);
+      setTotalItems(0);
       return;
     }
 
@@ -88,11 +47,13 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
         const data = await res.json();
         setImages(data.images || []);
         const total = data.total || 0;
+        setTotalItems(total);
         setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
       } catch (e) {
         console.error('加载失败', e);
         setImages([]);
         setTotalPages(1);
+        setTotalItems(0);
       } finally {
         setLoading(false);
       }
@@ -101,19 +62,19 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
     fetchData();
   }, [collection, selectedIds, page, pageSize]);
 
-  // 切换数据源时回到第一页
+  // 切换 collection / ids 时重置页码
   useEffect(() => {
     setPage(0);
   }, [collection, selectedIds]);
 
-  // 图片加载完成后重新布局
-  useEffect(() => {
-    if (!containerRef.current || !macyRef.current) return;
-
-    imagesLoaded(containerRef.current, () => {
-      macyRef.current?.recalculate(true);
-    });
-  }, [images]);
+  const breakpointColumnsObj = {
+    default: 6,
+    1600: 5,
+    1200: 4,
+    992: 3,
+    768: 2,
+    576: 1,
+  };
 
   return (
     <div className="main-grid-panel">
@@ -123,16 +84,22 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
         pageSize={pageSize}
         setPageSize={setPageSize}
         totalPages={totalPages}
+        totalItems={totalItems}
       />
       <div className="image-scroll-container">
         {loading && <div id="loading">加载中...</div>}
-        <div id="image-container" ref={containerRef}>
-          {images.map((img, i) => (
-            <div key={i} className="image-item" onClick={() => onSelectImage(img)}>
+
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="my-masonry-grid"
+          columnClassName="my-masonry-grid_column"
+        >
+          {images.map((img) => (
+            <div key={img.id} className="image-item" onClick={() => onSelectImage(img)}>
               <img src={img.url} loading="lazy" />
             </div>
           ))}
-        </div>
+        </Masonry>
       </div>
     </div>
   );

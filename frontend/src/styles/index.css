@@ -12,7 +12,7 @@ body {
 
 
 #nav-bar {
-  position: fixed;
+  position: absolute;
   top: 16px;
   right: 16px;
   background: #fffcccee;
@@ -82,6 +82,20 @@ select {
   position: relative;
 }
 
+
+.my-masonry-grid {
+  display: flex;
+  margin-left: -16px; /* gutter size offset */
+  width: auto;
+}
+.my-masonry-grid_column {
+  padding-left: 16px; /* gutter size */
+  background-clip: padding-box;
+}
+.my-masonry-grid_column > .image-item {
+  margin-bottom: 16px;
+}
+
 .left-sidebar,
 .right-sidebar {
   width: 300px;
@@ -107,6 +121,8 @@ select {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  position: relative;
+
 }
 
 .image-scroll-container {
@@ -119,12 +135,8 @@ select {
 }
 
 .tree-panel {
-  padding: 12px;
-  width: 240px;
-  height: 100vh; /* 关键：撑满页面高度 */
-  overflow-y: auto;
+  width: 100%;
   background: #f8f8f8;
-  border-right: 1px solid #ccc;
   font-size: 14px;
 }
 

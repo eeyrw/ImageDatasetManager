@@ -6,6 +6,7 @@ type Props = {
   pageSize: number;
   setPageSize: (s: number) => void;
   totalPages: number;
+  totalItems: number;
 };
 
 export default function Navbar({
@@ -13,7 +14,8 @@ export default function Navbar({
   setPage,
   pageSize,
   setPageSize,
-  totalPages
+  totalPages,
+  totalItems
 }: Props) {
   const [gotoPage, setGotoPage] = useState(page + 1);
 
@@ -41,7 +43,7 @@ export default function Navbar({
         min={1}
       />
       <label>页</label>
-      <span> / 共 {totalPages} 页</span>
+      <span> / 共 {totalPages} 页（共 {totalItems} 张图片）</span>
 
       <label>每页显示</label>
       <select
