@@ -1,57 +1,38 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, create_model
-from typing import Dict, List, Optional, Any, Literal
+from fastapi.middleware.cors import CORSMiddleware
+from .mock_data import dataset_tree, favourites, generate_images_for_ids
+
+from pydantic import BaseModel
+from typing import List, Literal
+
+class ImageRequest(BaseModel):
+    collection: Literal["dataset", "favourite"]
+    ids: List[str]
+    page: int = 0
+    size: int = 20
+
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Image Dataset Manager backend is running."}
+# 允许前端访问
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 或指定 localhost:5173 等
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-FIELDS = {
-    "width": "int",
-    "height": "int",
-    "aesthetic_score": "float",
-    "is_human": "bool",
-    "tags": "list_str",
-    "description": "str",
-}
+@app.get("/api/datasets/tree")
+def get_dataset_tree():
+    return dataset_tree
 
+@app.get("/api/favourites")
+def get_favourites():
+    return favourites
 
-class IntCondition(BaseModel):
-    op: Literal["eq", "ne", "lt", "lte", "gt", "gte"] = "eq"
-
-class FloatCondition(BaseModel):
-    op: Literal["eq", "ne", "lt", "lte", "gt", "gte"] = "eq"
-
-class BoolCondition(BaseModel):
-    op: Literal["eq", "ne"] = "eq"
-
-class StrCondition(BaseModel):
-    op: Literal["eq", "ne"] = "eq"
-class ListStrCondition(BaseModel):
-    op: Literal["contains"] = "contains"
-    value: List[str]
-    
-
-TYPE_OPS_MAP = {
-    "int":IntCondition,
-    "float":FloatCondition,
-    "bool":BoolCondition,    
-    "str":StrCondition,   
-    "list_str":ListStrCondition,       
-}
-
-def make_query_model():
-    fields = {}
-    for field, typ in FIELDS.items():
-        cond_model = TYPE_OPS_MAP[typ]
-        fields[field] = cond_model
-    model = create_model("QueryModel", **fields)
-    return model
-
-QueryModel = make_query_model()
-
-@app.post("/search")
-async def search(query: QueryModel):
-    return {"received_query": query.dict(exclude_none=True)}
+@app.post("/api/images")
+def get_images(req: ImageRequest):
+    if not req.ids:
+        return {"total": 0, "images": []}
+    return generate_images_for_ids(req.ids, req.page, req.size)

@@ -5,7 +5,8 @@ import imagesLoaded from 'imagesloaded';
 import Macy from 'macy';
 
 type Props = {
-  selectedDatasets: string[];
+  collection: 'dataset' | 'favourite' | null;
+  selectedIds: string[]; // UUID 列表
 };
 
 type ImageInfo = {
@@ -17,7 +18,9 @@ type ImageInfo = {
   path: string;
 };
 
-export default function ImageGrid({ selectedDatasets }: Props) {
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+export default function ImageGrid({  collection, selectedIds }: Props) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [totalPages, setTotalPages] = useState(1);
@@ -48,27 +51,28 @@ export default function ImageGrid({ selectedDatasets }: Props) {
     }
   }, []);
 
+  // 加载图片数据
   useEffect(() => {
-    const fetchImages = async () => {
+    if (!collection || selectedIds.length === 0) {
+      setImages([]);
+      setTotalPages(1);
+      return;
+    }
+
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const params = new URLSearchParams({
-          page: String(page),
-          size: String(pageSize),
-          datasets: selectedDatasets.join(',')
+        const res = await fetch(`${baseUrl}/api/images?page=${page}&size=${pageSize}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ collection, id: selectedIds }),
         });
-
-        const res = await fetch(`/api/images?${params.toString()}`);
         const data = await res.json();
-
         setImages(data.images || []);
-        setTotalPages(Math.max(1, Math.ceil(data.total / pageSize)));
-
-        imagesLoaded(containerRef.current!, () => {
-          macyRef.current?.recalculate(true);
-        });
+        const total = data.total || 0;
+        setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
       } catch (e) {
-        console.error('加载图片失败', e);
+        console.error('加载失败', e);
         setImages([]);
         setTotalPages(1);
       } finally {
@@ -76,8 +80,16 @@ export default function ImageGrid({ selectedDatasets }: Props) {
       }
     };
 
-    fetchImages();
-  }, [page, pageSize, selectedDatasets]);
+    fetchData();
+  }, [collection, selectedIds, page, pageSize]);
+
+
+
+  
+  // 如果切换了数据源，则重置页码
+  useEffect(() => {
+    setPage(0);
+  }, [collection, selectedIds]);
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'row' }}>

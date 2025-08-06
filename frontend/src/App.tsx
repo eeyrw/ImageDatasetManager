@@ -1,32 +1,22 @@
 import React, { useState } from 'react';
-import Navbar from './components/Navbar';
+import CollectionSelector from './components/CollectionSelector';
 import ImageGrid from './components/ImageGrid';
-import ImageDetails from './components/ImageDetails';
-import DatasetTree from './components/DatasetTree';
-
-export type ImageInfo = {
-  url: string;
-  width: number;
-  height: number;
-  tags: string[];
-  caption: string;
-};
 
 export default function App() {
-  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+  const [collection, setCollection] = useState<'dataset' | 'favourite' | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  const handleSelect = (type: 'dataset' | 'favourite', ids: string[]) => {
+    setCollection(ids.length > 0 ? type : null);
+    setSelectedIds(ids);
+  };
 
   return (
-    <>
-        <main className="main-layout">
-          <div className="tree-panel">
-            <DatasetTree
-              selected={selectedPaths}
-              onSelect={setSelectedPaths}
-            />
-          </div>
-          <ImageGrid selectedDatasets={selectedPaths} />
-        </main>
-    </>
+    <div className="main-layout">
+      <div className="side-panel">
+        <CollectionSelector onSelect={handleSelect} />
+      </div>
+      <ImageGrid collection={collection} selectedIds={selectedIds} />
+    </div>
   );
 }
