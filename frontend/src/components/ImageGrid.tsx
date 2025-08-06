@@ -10,8 +10,9 @@ type Props = {
 };
 
 type ImageInfo = {
+  id: string;
   url: string;
-  width: number;
+  title: string;
   height: number;
   score: number;
   tags: string[];
