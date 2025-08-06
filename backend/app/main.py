@@ -9,7 +9,7 @@ class ImageRequest(BaseModel):
     collection: Literal["dataset", "favourite"]
     ids: List[str]
     page: int = 0
-    size: int = 20
+    pageSize: int = 20
 
 
 app = FastAPI()
@@ -35,4 +35,4 @@ def get_favourites():
 def get_images(req: ImageRequest):
     if not req.ids:
         return {"total": 0, "images": []}
-    return generate_images_for_ids(req.ids, req.page, req.size)
+    return generate_images_for_ids(req.ids, req.page, req.pageSize)

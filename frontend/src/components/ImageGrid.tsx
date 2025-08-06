@@ -62,10 +62,10 @@ export default function ImageGrid({  collection, selectedIds }: Props) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${baseUrl}/api/images?page=${page}&size=${pageSize}`, {
+        const res = await fetch(`${baseUrl}/api/images`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ collection, id: selectedIds }),
+          body: JSON.stringify({ collection, ids: selectedIds,page,pageSize }),
         });
         const data = await res.json();
         setImages(data.images || []);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect,useState } from 'react';
 
 type Props = {
   page: number;
@@ -16,6 +16,11 @@ export default function Navbar({
   totalPages
 }: Props) {
   const [gotoPage, setGotoPage] = useState(page + 1);
+
+  // 🔧 每次 page 改变时同步更新 gotoPage
+  useEffect(() => {
+    setGotoPage(page + 1);
+  }, [page]);
 
   const handleGoto = () => {
     const target = Math.min(Math.max(gotoPage - 1, 0), totalPages - 1);
