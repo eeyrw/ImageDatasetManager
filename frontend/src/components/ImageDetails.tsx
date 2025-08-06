@@ -5,7 +5,7 @@ export default function ImageDetails({ image }: { image: ImageInfo | null }) {
   if (!image) return <div className="side-panel">点击图片查看详情</div>;
 
   return (
-    <div className="side-panel">
+    <div>
       <img src={image.url} style={{ width: '100%' }} />
       <p><strong>描述:</strong> {image.title}</p>
       <p><strong>UUID:</strong> {image.id}</p>

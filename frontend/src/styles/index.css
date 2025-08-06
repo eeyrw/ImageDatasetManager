@@ -1,9 +1,16 @@
-body {
-  font-family: sans-serif;
+html, body, #root {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: sans-serif;
   background: #fafafa;
 }
+
+
 #nav-bar {
   position: fixed;
   top: 16px;
@@ -20,10 +27,7 @@ body {
   gap: 8px;
   flex-wrap: wrap;
 }
-#image-container {
-  margin: 120px 16px 32px 16px;
-  flex: 1;
-}
+
 .image-item img {
   width: 100%;
   display: block;
@@ -70,21 +74,47 @@ select {
   z-index: 1000;
   user-select: none;
 }
-.main-layout {
+
+.page-container {
   display: flex;
-  flex-direction: row;
-}
-.side-panel {
-  width: 200px;
-  padding: 16px;
-  background: #fff;
-  border-left: 1px solid #ddd;
-  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.05);
-  overflow-y: auto;
-  max-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
 }
 
-.side-panel h3 {
+.left-sidebar,
+.right-sidebar {
+  width: 300px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ccc;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.right-sidebar {
+  border-left: 1px solid #ccc;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-grid-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.image-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.right-sidebar h3 {
   margin-top: 0;
 }
 
