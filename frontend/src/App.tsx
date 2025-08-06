@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import ImageGrid from './components/ImageGrid';
 import ImageDetails from './components/ImageDetails';
+import DatasetTree from './components/DatasetTree';
 
 export type ImageInfo = {
   url: string;
@@ -12,22 +13,20 @@ export type ImageInfo = {
 };
 
 export default function App() {
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-  const [selectedImage, setSelectedImage] = useState<ImageInfo | null>(null);
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
+
 
   return (
     <>
-      <Navbar
-        page={page}
-        setPage={setPage}
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-      />
-      <div className="main-layout">
-        <ImageGrid page={page} pageSize={pageSize} onSelectImage={setSelectedImage} />
-        <ImageDetails image={selectedImage} />
-      </div>
+        <main className="main-layout">
+          <div className="tree-panel">
+            <DatasetTree
+              selected={selectedPaths}
+              onSelect={setSelectedPaths}
+            />
+          </div>
+          <ImageGrid selectedDatasets={selectedPaths} />
+        </main>
     </>
   );
 }

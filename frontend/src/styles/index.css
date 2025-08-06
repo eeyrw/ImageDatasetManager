@@ -75,10 +75,43 @@ select {
   flex-direction: row;
 }
 .side-panel {
-  width: 300px;
+  width: 200px;
   padding: 16px;
-  background: #ffffffdd;
-  border-left: 1px solid #ccc;
-  font-size: 14px;
+  background: #fff;
+  border-left: 1px solid #ddd;
   box-shadow: -2px 0 6px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.side-panel h3 {
+  margin-top: 0;
+}
+
+.tree-panel {
+  padding: 12px;
+  width: 240px;
+  height: 100vh; /* 关键：撑满页面高度 */
+  overflow-y: auto;
+  background: #f8f8f8;
+  border-right: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.tree-node {
+  display: block;
+  margin: 4px 0;
+  cursor: pointer;
+}
+
+.tree-node input[type='checkbox'] {
+  margin-right: 6px;
+}
+
+.tree-search {
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }

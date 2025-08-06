@@ -5,11 +5,17 @@ type Props = {
   setPage: (p: number) => void;
   pageSize: number;
   setPageSize: (s: number) => void;
+  totalPages: number;
 };
 
-export default function Navbar({ page, setPage, pageSize, setPageSize }: Props) {
+export default function Navbar({
+  page,
+  setPage,
+  pageSize,
+  setPageSize,
+  totalPages
+}: Props) {
   const [gotoPage, setGotoPage] = useState(page + 1);
-  const [totalPages, setTotalPages] = useState(1);
 
   const handleGoto = () => {
     const target = Math.min(Math.max(gotoPage - 1, 0), totalPages - 1);
@@ -46,7 +52,10 @@ export default function Navbar({ page, setPage, pageSize, setPageSize }: Props) 
       </select>
       <label>张图片</label>
 
-      <button onClick={() => setPage(page + 1)}>
+      <button
+        onClick={() => setPage(Math.min(page + 1, totalPages - 1))}
+        disabled={page + 1 >= totalPages}
+      >
         下一页
       </button>
     </div>
