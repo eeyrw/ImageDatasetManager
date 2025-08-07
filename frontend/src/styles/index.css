@@ -68,6 +68,12 @@ body {
   padding: 16px;
 }
 
+.image-item img {
+  border-radius: 8px;
+  width: 100%;
+  display: block;
+}
+
 input[type='number'],
 select {
   padding: 4px 6px;

@@ -6,6 +6,7 @@ export type ImageInfo = {
   id: string;
   url: string;
   title: string;
+  width:number;
   height: number;
   score: number;
   tags: string[];

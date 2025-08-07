@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Tag, Descriptions } from 'antd';
+import { Tag, Descriptions,Flex } from 'antd';
 
 export type FieldConfig = {
   key: string;
@@ -25,13 +25,14 @@ export default function ImageDetails({ data, fields }: { data: any | null, field
           <img
             src={imageValue}
             alt={imageField.label}
-            style={{ maxWidth: 320, maxHeight: 320, objectFit: 'contain', borderRadius: 6, boxShadow: '0 2px 8px #eee' }}
+            style={{ width: "100%", borderRadius: 6}}
           />
         </div>
       )}
       <Descriptions
         column={1}
-        size="middle"
+        layout="vertical"
+        size="small"
         style={{ background: '#fff', padding: 16, borderRadius: 8 }}
       >
         {fields.filter(field => field.type !== 'image').map((field: FieldConfig) => {
@@ -45,7 +46,7 @@ export default function ImageDetails({ data, fields }: { data: any | null, field
             switch (field.type) {
               case 'tags':
                 shouldShow = Array.isArray(value) && value.length > 0;
-                content = shouldShow ? value.map((tag: string) => <Tag key={tag}>{tag}</Tag>) : null;
+                content = shouldShow ? value.map((tag: string) => <Flex wrap gap="small"><Tag key={tag}>{tag}</Tag></Flex>) : null;
                 break;
               default:
                 shouldShow = value !== undefined && value !== null && value !== '';

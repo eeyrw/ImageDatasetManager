@@ -3,7 +3,7 @@ import CollectionSelector from './components/CollectionSelector';
 import ImageGrid from './components/ImageGrid';
 import ImageDetails, { FieldConfig } from './components/ImageDetails';
 import { ImageInfo } from './components/ImageGrid';
-import { Layout, Card } from 'antd';
+import { Layout, Card, Splitter } from 'antd';
 const { Sider, Content } = Layout;
 
 export default function App() {
@@ -20,7 +20,6 @@ export default function App() {
   const fields: FieldConfig[] = [
     { key: 'url', type: 'image', label: '图片' },
     { key: 'title', type: 'text', label: '描述' },
-    { key: 'id', type: 'text', label: 'UUID' },
     { key: 'height', type: 'number', label: '高度' },
     { key: 'width', type: 'number', label: '宽度' },
     { key: 'tags', type: 'tags', label: '标签' },
@@ -28,22 +27,21 @@ export default function App() {
     { key: 'path', type: 'text', label: '路径' },
   ];
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f5f6fa' }}>
-      <Sider width={300} style={{ background: '#fff', borderRight: '1px solid #eee', padding: 0 }}>
+
+    <Splitter style={{ minHeight: '100vh', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)' }}>
+      <Splitter.Panel collapsible defaultSize="20%" min="10%" max="70%">
         <Card title="数据集/收藏夹" bordered={false} bodyStyle={{ padding: 16 }} style={{ height: '100%', borderRadius: 0, boxShadow: 'none' }}>
           <CollectionSelector onSelect={handleSelect} />
         </Card>
-      </Sider>
-      <Layout>
-        <Content style={{ padding: 0, minHeight: 0, height: '100vh', overflow: 'auto' }}>
-          <ImageGrid collection={collection} selectedIds={selectedIds} onSelectImage={setSelectedImage} />
-        </Content>
-      </Layout>
-      <Sider width={200} style={{ background: '#fff', borderLeft: '1px solid #eee', padding: 0 }}>
+      </Splitter.Panel>
+      <Splitter.Panel style={{ padding: 0, minHeight: 0, height: '100vh', overflow: 'auto' }}>
+        <ImageGrid collection={collection} selectedIds={selectedIds} onSelectImage={setSelectedImage} />
+      </Splitter.Panel>
+      <Splitter.Panel collapsible defaultSize="15%" min="10%" max="70%">
         <Card title="图片详情" bordered={false} bodyStyle={{ padding: 16 }} style={{ height: '100%', borderRadius: 0, boxShadow: 'none' }}>
           <ImageDetails data={selectedImage} fields={fields} />
         </Card>
-      </Sider>
-    </Layout>
+      </Splitter.Panel>
+    </Splitter>
   );
 }
