@@ -34,7 +34,7 @@ def scan_directory(path, uuid_map):
     if images or children:
         node_id = generate_uuid()
         uuid_map[node_id] = {
-            "path": os.path.abspath(path),
+            "path": path,
             "images": images
         }
 

@@ -82,19 +82,22 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
           enterButton={false}
         />
       )}
-      <Space style={{ marginBottom: 8 }}>
+      <Space style={{ marginBottom: 8, flexWrap: 'wrap', display: 'flex', gap: 8 }}>
         <Button size="small" onClick={handleSelectAll}>全选</Button>
         <Button size="small" onClick={handleInvertSelection}>反选</Button>
         <Button size="small" onClick={handleClearAll}>取消全选</Button>
+        <Button size="small" onClick={() => setExpandedKeys(allKeys)}>展开全部</Button>
+        <Button size="small" onClick={() => setExpandedKeys([])}>折叠全部</Button>
       </Space>
       <Tree
         checkable
         treeData={treeData}
+        height={500}
         checkedKeys={selected}
         onCheck={keys => onSelect(Array.isArray(keys) ? keys.map(String) : [])}
         expandedKeys={expandedKeys}
         onExpand={keys => setExpandedKeys(keys as string[])}
-        style={{ background: 'transparent', padding: 8 }}
+        style={{ background: 'transparent'}}
       />
     </Card>
   );

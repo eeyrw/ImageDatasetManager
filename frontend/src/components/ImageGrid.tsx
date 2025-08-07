@@ -22,7 +22,7 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export default function ImageGrid({ collection, selectedIds, onSelectImage }: Props) {
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(100);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [images, setImages] = useState<ImageInfo[]>([]);
