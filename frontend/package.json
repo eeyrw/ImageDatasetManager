@@ -7,6 +7,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "antd": "^5.26.7",
     "imagesloaded": "^5.0.0",
     "macy": "^2.5.1",
     "react": "^18.0.0",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import TreeSelector, { TreeItem } from './TreeSelector';
-//import { mockDatasetTree, mockFavourites } from './mockData';
+import { Tabs } from 'antd';
 
 type Props = {
   onSelect: (collection: 'dataset' | 'favourite', ids: string[]) => void;
@@ -38,55 +38,38 @@ export default function CollectionSelector({ onSelect }: Props) {
   };
 
   return (
-    <div className="tree-panel">
-      <div style={{ display: 'flex', marginBottom: 12, gap: 12 }}>
-        <button
-          onClick={() => setActiveTab('dataset')}
-          style={{
-            flex: 1,
-            padding: 8,
-            fontWeight: activeTab === 'dataset' ? 'bold' : 'normal',
-            background: activeTab === 'dataset' ? '#eee' : 'transparent',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          数据集
-        </button>
-        <button
-          onClick={() => setActiveTab('favourite')}
-          style={{
-            flex: 1,
-            padding: 8,
-            fontWeight: activeTab === 'favourite' ? 'bold' : 'normal',
-            background: activeTab === 'favourite' ? '#eee' : 'transparent',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          收藏夹
-        </button>
-      </div>
-
-      {activeTab === 'dataset' ? (
-        <TreeSelector
-          items={datasetTree}
-          selected={selectedDataset}
-          onSelect={handleSelect('dataset')}
-          search={search}
-          setSearch={setSearch}
-          allowSearch={true}
-        />
-      ) : (
-        <TreeSelector
-          items={favouriteTree}
-          selected={selectedFavourite}
-          onSelect={handleSelect('favourite')}
-          search={search}
-          setSearch={setSearch}
-          allowSearch={true}
-        />
-      )}
+    <div>
+      <Tabs
+        activeKey={activeTab}
+        onChange={key => setActiveTab(key as 'dataset' | 'favourite')}
+        items={[{
+          key: 'dataset',
+          label: '数据集',
+          children: (
+            <TreeSelector
+              items={datasetTree}
+              selected={selectedDataset}
+              onSelect={handleSelect('dataset')}
+              search={search}
+              setSearch={setSearch}
+              allowSearch={true}
+            />
+          )
+        }, {
+          key: 'favourite',
+          label: '收藏夹',
+          children: (
+            <TreeSelector
+              items={favouriteTree}
+              selected={selectedFavourite}
+              onSelect={handleSelect('favourite')}
+              search={search}
+              setSearch={setSearch}
+              allowSearch={true}
+            />
+          )
+        }]}
+      />
     </div>
   );
 }

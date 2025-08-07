@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import Masonry from 'react-masonry-css';
 
-type ImageInfo = {
+export type ImageInfo = {
   id: string;
   url: string;
   title: string;

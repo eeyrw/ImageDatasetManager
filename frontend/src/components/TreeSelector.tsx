@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Button, Input, Tree, Space, Card } from 'antd';
 
 export type TreeItem = {
   id: string;
@@ -16,47 +17,15 @@ type Props = {
 };
 
 export default function TreeSelector({ items, selected, onSelect, search = '', setSearch, allowSearch = true }: Props) {
-  // 工具函数：获取节点及所有子孙的id
-  const collectIds = (item: TreeItem): string[] => {
-    return [item.id, ...(item.children?.flatMap(collectIds) || [])];
-  };
+  // 工具函数：TreeItem[] 转换为 antd Tree 的数据结构
+  const toAntdTreeData = (nodes: TreeItem[]): any[] =>
+    nodes.map(item => ({
+      key: item.id,
+      title: item.name,
+      children: item.children ? toAntdTreeData(item.children) : undefined,
+    }));
 
-  const isSelected = (id: string) => selected.includes(id);
-
-  const toggle = (item: TreeItem) => {
-    const ids = collectIds(item);
-    const allSelected = ids.every(id => selected.includes(id));
-    if (allSelected) {
-      onSelect(selected.filter(id => !ids.includes(id)));
-    } else {
-      onSelect([...new Set([...selected, ...ids])]);
-    }
-  };
-
-  const handleSelectAll = () => {
-    const allIds = items.flatMap(collectIds);
-    onSelect([...new Set([...selected, ...allIds])]);
-  };
-
-
-  const handleClearAll = () => {
-    onSelect([]);
-  };
-
-  // 反选当前过滤结果
-  const handleInvertSelection = () => {
-    // 获取当前过滤树所有节点id
-    const getAllIds = (nodes: TreeItem[]): string[] =>
-      nodes.flatMap(item => [item.id, ...(item.children ? getAllIds(item.children) : [])]);
-    const allIds = getAllIds(filteredItems);
-    // 反选：选中未选中的，取消已选中的（仅限当前过滤结果）
-    const newSelected = [
-      ...selected.filter(id => !allIds.includes(id)), // 保留未在当前过滤结果中的已选id
-      ...allIds.filter(id => !selected.includes(id)), // 选中未被选中的id
-    ];
-    onSelect(newSelected);
-  };
-
+  // 过滤树
   const filteredItems = useMemo(() => {
     if (!search) return items;
     const filterTree = (node: TreeItem): TreeItem | null => {
@@ -72,40 +41,61 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
     return items.map(filterTree).filter((x): x is TreeItem => x !== null);
   }, [items, search]);
 
-  const renderNode = (item: TreeItem, depth = 0) => (
-    <div key={item.id} style={{ marginLeft: depth * 12 }}>
-      <label className="tree-node">
-        <input
-          type="checkbox"
-          checked={isSelected(item.id)}
-          onChange={() => toggle(item)}
-        />{' '}
-        {item.name}
-      </label>
-      {item.children?.map(child => renderNode(child, depth + 1))}
-    </div>
-  );
+  // 全选/反选/清空
+  const collectAllIds = (nodes: TreeItem[]): string[] =>
+    nodes.flatMap(item => [item.id, ...(item.children ? collectAllIds(item.children) : [])]);
+
+  const handleSelectAll = () => {
+    const allIds = collectAllIds(filteredItems);
+    onSelect(Array.from(new Set([...selected, ...allIds])));
+  };
+  const handleClearAll = () => onSelect([]);
+  const handleInvertSelection = () => {
+    const allIds = collectAllIds(filteredItems);
+    const newSelected = [
+      ...selected.filter(id => !allIds.includes(id)),
+      ...allIds.filter(id => !selected.includes(id)),
+    ];
+    onSelect(newSelected);
+  };
+
+  // antd Tree 受控
+  const treeData = useMemo(() => toAntdTreeData(filteredItems), [filteredItems]);
+  // 递归收集所有 key 作为 expandedKeys
+  const getAllKeys = (nodes: TreeItem[]): string[] =>
+    nodes.flatMap(item => [item.id, ...(item.children ? getAllKeys(item.children) : [])]);
+  const allKeys = useMemo(() => getAllKeys(filteredItems), [filteredItems]);
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(allKeys);
+  // 当过滤内容变化时自动展开所有
+  React.useEffect(() => {
+    setExpandedKeys(allKeys);
+  }, [allKeys]);
 
   return (
-    <div>
+    <Card bordered={false} bodyStyle={{ padding: 12 }} style={{ boxShadow: 'none', background: 'transparent' }}>
       {allowSearch && setSearch && (
-        <input
-          type="text"
-          className="tree-search"
+        <Input.Search
           placeholder="搜索..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
+          style={{ marginBottom: 8 }}
+          enterButton={false}
         />
       )}
-
-
-      <div style={{ marginBottom: 8 }}>
-        <button onClick={handleSelectAll} style={{ marginRight: 8 }}>全选</button>
-        <button onClick={handleInvertSelection} style={{ marginRight: 8 }}>反选</button>
-        <button onClick={handleClearAll}>取消全选</button>
-      </div>
-
-      {filteredItems.map(item => renderNode(item))}
-    </div>
+      <Space style={{ marginBottom: 8 }}>
+        <Button size="small" onClick={handleSelectAll}>全选</Button>
+        <Button size="small" onClick={handleInvertSelection}>反选</Button>
+        <Button size="small" onClick={handleClearAll}>取消全选</Button>
+      </Space>
+      <Tree
+        checkable
+        treeData={treeData}
+        checkedKeys={selected}
+        onCheck={keys => onSelect(Array.isArray(keys) ? keys.map(String) : [])}
+        expandedKeys={expandedKeys}
+        onExpand={keys => setExpandedKeys(keys as string[])}
+        style={{ background: 'transparent', padding: 8 }}
+      />
+    </Card>
   );
 }

@@ -13,21 +13,19 @@ body {
 
 /* ================= 导航栏 ================= */
 #nav-bar {
-position: sticky;
-top: 0;
-margin: 0 0 12px 0;
-z-index: 10;
-  background: #fffcccee;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  padding: 10px 14px;
-  z-index: 999;
-  font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  margin: 0 0 12px 0;
+  z-index: 10;
+  background: #fff;
+  padding: 8px 24px;
+  font-size: 15px;
   display: flex;
   align-items: center;
-  gap: 8px;
   flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-bottom: 1px solid #f0f0f0;
+  min-height: 56px;
 }
 
 /* ================= Masonry 图片布局 ================= */
@@ -70,47 +68,6 @@ z-index: 10;
   padding: 16px;
 }
 
-/* ================= 侧边栏 ================= */
-.left-sidebar,
-.right-sidebar {
-  width: 300px;
-  background-color: #f9f9f9;
-  border-right: 1px solid #ccc;
-  overflow-y: auto;
-  padding: 12px;
-}
-.right-sidebar {
-  border-left: 1px solid #ccc;
-}
-.right-sidebar h3 {
-  margin-top: 0;
-}
-
-/* ================= 图片项 ================= */
-.image-item img {
-  width: 100%;
-  display: block;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-/* ================= 按钮 ================= */
-button {
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* ================= 表单控件 ================= */
-label {
-  font-size: 14px;
-}
 input[type='number'],
 select {
   padding: 4px 6px;
@@ -135,35 +92,4 @@ input[type='number'] {
   font-size: 14px;
   z-index: 1000;
   user-select: none;
-}
-
-/* ================= 树形面板 ================= */
-.tree-panel {
-  width: 100%;
-  background: #f8f8f8;
-  font-size: 14px;
-}
-.tree-node {
-  display: block;
-  margin: 4px 0;
-  cursor: pointer;
-}
-.tree-node input[type='checkbox'] {
-  margin-right: 6px;
-}
-.tree-search {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 14px;
-  margin-bottom: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-.tree-search:focus {
-  border-color: #7bb1fa;
-  box-shadow: 0 2px 8px rgba(123,177,250,0.12);
 }
