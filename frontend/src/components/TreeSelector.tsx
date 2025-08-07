@@ -38,8 +38,23 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
     onSelect([...new Set([...selected, ...allIds])]);
   };
 
+
   const handleClearAll = () => {
     onSelect([]);
+  };
+
+  // 反选当前过滤结果
+  const handleInvertSelection = () => {
+    // 获取当前过滤树所有节点id
+    const getAllIds = (nodes: TreeItem[]): string[] =>
+      nodes.flatMap(item => [item.id, ...(item.children ? getAllIds(item.children) : [])]);
+    const allIds = getAllIds(filteredItems);
+    // 反选：选中未选中的，取消已选中的（仅限当前过滤结果）
+    const newSelected = [
+      ...selected.filter(id => !allIds.includes(id)), // 保留未在当前过滤结果中的已选id
+      ...allIds.filter(id => !selected.includes(id)), // 选中未被选中的id
+    ];
+    onSelect(newSelected);
   };
 
   const filteredItems = useMemo(() => {
@@ -83,8 +98,10 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
         />
       )}
 
+
       <div style={{ marginBottom: 8 }}>
         <button onClick={handleSelectAll} style={{ marginRight: 8 }}>全选</button>
+        <button onClick={handleInvertSelection} style={{ marginRight: 8 }}>反选</button>
         <button onClick={handleClearAll}>取消全选</button>
       </div>
 

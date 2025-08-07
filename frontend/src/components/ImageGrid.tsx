@@ -78,17 +78,16 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
 
   return (
     <div className="main-grid-panel">
-      <Navbar
-        page={page}
-        setPage={setPage}
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        totalPages={totalPages}
-        totalItems={totalItems}
-      />
       <div className="image-scroll-container">
+        <Navbar
+          page={page}
+          setPage={setPage}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          totalPages={totalPages}
+          totalItems={totalItems}
+        />
         {loading && <div id="loading">加载中...</div>}
-
         <Masonry
           breakpointCols={breakpointColumnsObj}
           className="my-masonry-grid"
