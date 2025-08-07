@@ -133,7 +133,9 @@ def get_images(req: ImageRequest):
                         "title": imageInfo['HQ_CAP'][0] if 'HQ_CAP' in imageInfo.keys() else None,
                         "tags": imageInfo['DBRU_TAG'].split(','),
                         "width":imageInfo['W'],
-                        "height":imageInfo['H']
+                        "height":imageInfo['H'],
+                        "score_quality":imageInfo['Q512'],
+                        "score_aesthetics":imageInfo['A'],
                     })
                 imageInfoCache[id] = images
                 all_images.extend(imageInfoCache[id])

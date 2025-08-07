@@ -23,7 +23,8 @@ export default function App() {
     { key: 'height', type: 'number', label: '高度' },
     { key: 'width', type: 'number', label: '宽度' },
     { key: 'tags', type: 'tags', label: '标签' },
-    { key: 'score', type: 'number', label: '分数' },
+    { key: 'score_quality', type: 'number', label: '画质评分' },
+    { key: 'score_aesthetics', type: 'number', label: '美学评分' },
     { key: 'path', type: 'text', label: '路径' },
   ];
   return (
