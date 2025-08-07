@@ -30,8 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ROOT_DIR = Path("xxxx")
-IMAGE_DIR = Path("xxxx/yyyyy")
+ROOT_DIR = Path("/mnt/yuansnas/Backup/big_server/ds/DiffusionDataset")
+IMAGE_DIR = Path("/mnt/yuansnas/Backup/big_server/ds/DiffusionDataset/illustration")
 
 IMGPROXY_URL = "http://localhost:8082"
 IMGPROXY_PATH_PREFIX = "/insecure/width:300/plain/local://"
@@ -115,6 +115,7 @@ def get_images(req: ImageRequest):
     
     all_images = []
     for id in req.ids:
+        images = []
         if id not in imageInfoCache.keys():
             imageInfoJsonDir= uuid_dataset_json_map[id].strip("/")
             imageInfoFilePath = IMAGE_DIR/Path(imageInfoJsonDir)/Path('ImageInfo.json')
@@ -125,7 +126,7 @@ def get_images(req: ImageRequest):
                     mid_path = IMAGE_DIR.relative_to(ROOT_DIR)
                     rel_path = mid_path/Path(imageInfoJsonDir)/Path(imageInfo['IMG'])
                     url = f"{IMGPROXY_URL}{IMGPROXY_PATH_PREFIX}/{rel_path.as_posix().replace("#", "%23")}@webp"
-                    all_images.append({
+                    images.append({
                         "id":str(uuid.uuid4()),
                         "path":str(rel_path),
                         "url": url,
@@ -134,12 +135,13 @@ def get_images(req: ImageRequest):
                         "width":imageInfo['W'],
                         "height":imageInfo['H']
                     })
-                imageInfoCache[id] = all_images
+                imageInfoCache[id] = images
+                all_images.extend(imageInfoCache[id])
             else:
                 print(f'Fail to read {imageInfoFilePath}.')
                 continue
         else:
-           all_images =  imageInfoCache[id]
+            all_images.extend(imageInfoCache[id])
     start = req.page * req.pageSize
     end = start + req.pageSize
     return {
