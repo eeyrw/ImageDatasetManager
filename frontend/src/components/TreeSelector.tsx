@@ -97,6 +97,7 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
         onCheck={keys => onSelect(Array.isArray(keys) ? keys.map(String) : [])}
         expandedKeys={expandedKeys}
         onExpand={keys => setExpandedKeys(keys as string[])}
+        showLine={true}
         style={{ background: 'transparent'}}
       />
     </Card>
