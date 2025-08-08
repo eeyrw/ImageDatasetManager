@@ -2,3 +2,4 @@ fastapi[standard]
 uvicorn
 psycopg2-binary
 sqlalchemy
+pydantic-settings

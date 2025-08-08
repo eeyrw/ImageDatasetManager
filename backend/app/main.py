@@ -6,6 +6,7 @@ import uuid
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .mock_data import dataset_tree_mock, favourites, generate_images_for_ids
+from .config import settings
 
 from pydantic import BaseModel
 from typing import List, Literal
@@ -30,8 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ROOT_DIR = Path("/mnt/yuansnas/Backup/big_server/ds/DiffusionDataset")
-IMAGE_DIR = Path("/mnt/yuansnas/Backup/big_server/ds/DiffusionDataset/illustration")
+ROOT_DIR = settings.root_dir
+IMAGE_DIR = settings.image_dir
 
 IMGPROXY_URL = "http://localhost:8082"
 IMGPROXY_PATH_PREFIX = "/insecure/width:300/plain/local://"
@@ -117,30 +118,33 @@ def get_images(req: ImageRequest):
     for id in req.ids:
         images = []
         if id not in imageInfoCache.keys():
-            imageInfoJsonDir= uuid_dataset_json_map[id].strip("/")
-            imageInfoFilePath = IMAGE_DIR/Path(imageInfoJsonDir)/Path('ImageInfo.json')
-            if os.path.isfile(imageInfoFilePath):
-                with open(imageInfoFilePath, 'r', encoding='utf8') as f:
-                    imageInfoList = json.load(f)
-                for imageInfo in imageInfoList:
-                    mid_path = IMAGE_DIR.relative_to(ROOT_DIR)
-                    rel_path = mid_path/Path(imageInfoJsonDir)/Path(imageInfo['IMG'])
-                    url = f"{IMGPROXY_URL}{IMGPROXY_PATH_PREFIX}/{rel_path.as_posix().replace("#", "%23")}@webp"
-                    images.append({
-                        "id":str(uuid.uuid4()),
-                        "path":str(rel_path),
-                        "url": url,
-                        "title": imageInfo['HQ_CAP'][0] if 'HQ_CAP' in imageInfo.keys() else None,
-                        "tags": imageInfo['DBRU_TAG'].split(','),
-                        "width":imageInfo['W'],
-                        "height":imageInfo['H'],
-                        "score_quality":imageInfo['Q512'],
-                        "score_aesthetics":imageInfo['A'],
-                    })
-                imageInfoCache[id] = images
-                all_images.extend(imageInfoCache[id])
+            if id in uuid_dataset_json_map.keys():
+                imageInfoJsonDir= uuid_dataset_json_map[id].strip("/")
+                imageInfoFilePath = IMAGE_DIR/Path(imageInfoJsonDir)/Path('ImageInfo.json')
+                if os.path.isfile(imageInfoFilePath):
+                    with open(imageInfoFilePath, 'r', encoding='utf8') as f:
+                        imageInfoList = json.load(f)
+                    for imageInfo in imageInfoList:
+                        mid_path = IMAGE_DIR.relative_to(ROOT_DIR)
+                        rel_path = mid_path/Path(imageInfoJsonDir)/Path(imageInfo['IMG'])
+                        url = f"{IMGPROXY_URL}{IMGPROXY_PATH_PREFIX}/{rel_path.as_posix().replace("#", "%23")}@webp"
+                        images.append({
+                            "id":str(uuid.uuid4()),
+                            "path":str(rel_path),
+                            "url": url,
+                            "title": imageInfo['HQ_CAP'][0] if 'HQ_CAP' in imageInfo.keys() else None,
+                            "tags": imageInfo['DBRU_TAG'].split(','),
+                            "size":{"w":imageInfo['W'],"h":imageInfo['H']},
+                            "score_quality":imageInfo['Q512'],
+                            "score_aesthetics":imageInfo['A'],
+                        })
+                    imageInfoCache[id] = images
+                    all_images.extend(imageInfoCache[id])
+                else:
+                    print(f'Fail to read {imageInfoFilePath}.')
+                    continue
             else:
-                print(f'Fail to read {imageInfoFilePath}.')
+                print(f'Not existing id {id}')
                 continue
         else:
             all_images.extend(imageInfoCache[id])

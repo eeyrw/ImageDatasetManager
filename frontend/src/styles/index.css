@@ -86,16 +86,9 @@ input[type='number'] {
 }
 
 /* ================= 加载提示 ================= */
-#loading {
-  display: block;
-  position: fixed;
-  top: 60px;
-  right: 16px;
-  background: #000000cc;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  z-index: 1000;
-  user-select: none;
+.loading-overlay {
+  text-align: center;
+  padding: 12px;
+  font-size: 15px;
+  color: #999;
 }

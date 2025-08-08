@@ -88,7 +88,7 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
           totalPages={totalPages}
           totalItems={totalItems}
         />
-        {loading && <div id="loading">加载中...</div>}
+        {loading && <div className="loading-overlay">加载中...</div>}
         <Masonry
           breakpointCols={breakpointColumnsObj}
           className="my-masonry-grid"

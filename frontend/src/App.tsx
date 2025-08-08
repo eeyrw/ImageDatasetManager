@@ -20,8 +20,7 @@ export default function App() {
   const fields: FieldConfig[] = [
     { key: 'url', type: 'image', label: '图片' },
     { key: 'title', type: 'text', label: '描述' },
-    { key: 'height', type: 'number', label: '高度' },
-    { key: 'width', type: 'number', label: '宽度' },
+    { key: 'size', type: 'size', label: '尺寸' },
     { key: 'tags', type: 'tags', label: '标签' },
     { key: 'score_quality', type: 'number', label: '画质评分' },
     { key: 'score_aesthetics', type: 'number', label: '美学评分' },

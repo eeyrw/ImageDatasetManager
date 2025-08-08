@@ -4,7 +4,7 @@ import { Tag, Descriptions,Flex } from 'antd';
 
 export type FieldConfig = {
   key: string;
-  type: 'image' | 'text' | 'number' | 'tags';
+  type: 'image' | 'text' | 'number' | 'tags'| 'size';
   label: string;
   render?: (value: any, data: any) => React.ReactNode;
 };
@@ -46,7 +46,17 @@ export default function ImageDetails({ data, fields }: { data: any | null, field
             switch (field.type) {
               case 'tags':
                 shouldShow = Array.isArray(value) && value.length > 0;
-                content = shouldShow ? value.map((tag: string) => <Flex wrap gap="small"><Tag key={tag}>{tag}</Tag></Flex>) : null;
+                content = shouldShow ? (
+                  <Flex wrap="wrap" gap="small">
+                    {value.map((tag: string) => (
+                      <Tag key={tag}>{tag}</Tag>
+                    ))}
+                  </Flex>
+                ) : null;
+                break;
+              case 'size':
+                shouldShow = value && typeof value.w === 'number' && typeof value.h === 'number';
+                content = shouldShow ? `${value.w} × ${value.h}` : null;
                 break;
               default:
                 shouldShow = value !== undefined && value !== null && value !== '';
