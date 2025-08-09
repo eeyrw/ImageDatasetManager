@@ -74,17 +74,6 @@ body {
   display: block;
 }
 
-input[type='number'],
-select {
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-input[type='number'] {
-  width: 60px;
-}
-
 /* ================= 加载提示 ================= */
 .loading-overlay {
   text-align: center;

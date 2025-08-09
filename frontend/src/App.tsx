@@ -5,8 +5,7 @@ import ImageDetails, { FieldConfig } from './components/ImageDetails';
 import { ImageInfo } from './components/ImageGrid';
 import DynamicQueryForm from "./components/DynamicQueryForm";
 
-import { Layout, Card, Splitter } from 'antd';
-const { Sider, Content } = Layout;
+import { Card, Splitter } from 'antd';
 
 export default function App() {
   const [collection, setCollection] = useState<'dataset' | 'favourite' | null>(null);
