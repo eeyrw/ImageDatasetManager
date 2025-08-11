@@ -36,7 +36,9 @@ async def query_images_by_dataset_ids(
         .outerjoin(ImageFeature, ImageFeature.file_id == File.id)
         .where(Image.dataset_id.in_(dataset_ids))
         .order_by(
-            DatasetDirAlias.dir_path.asc()
+            DatasetDirAlias.dir_path.asc(),
+            File.file_path.asc(),
+            Image.id.asc()
         )
         .limit(pagesize)
         .offset(page * pagesize)

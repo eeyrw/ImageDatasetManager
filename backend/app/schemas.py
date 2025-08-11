@@ -1,10 +1,17 @@
-import uuid
+from __future__ import annotations
 from pydantic import BaseModel
 from typing import List, Optional
 from uuid import UUID
 
 
 # ---------- Pydantic ----------
+
+
+class DatasetTree(BaseModel):
+    id: UUID
+    name: str
+    children: Optional[List[DatasetTree]]
+
 
 class ImageSize(BaseModel):
     w: Optional[int]
