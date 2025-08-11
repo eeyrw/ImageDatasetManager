@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import Masonry from 'react-masonry-css';
+import { Gallery, Item } from 'react-photoswipe-gallery';
+import 'photoswipe/dist/photoswipe.css'
+
 
 export type ImageInfo = {
   id: string;
   url: string;
+  raw_size_image_url: string;
   title: string;
-  width:number;
-  height: number;
+  size: { w: number, h: number }
   score: number;
   tags: string[];
   path: string;
@@ -89,18 +92,40 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
           totalItems={totalItems}
         />
         {loading && <div className="loading-overlay">加载中...</div>}
-        <Masonry
-          breakpointCols={breakpointColumnsObj}
-          className="my-masonry-grid"
-          columnClassName="my-masonry-grid_column"
-        >
-          {images.map((img) => (
-            <div key={img.id} className="image-item" onClick={() => onSelectImage(img)}>
-              <img src={img.url} loading="lazy" />
-            </div>
-          ))}
-        </Masonry>
+
+        {/* 1. Gallery 包裹整个 Masonry 图片列表 */}
+        <Gallery withCaption>
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="my-masonry-grid"
+            columnClassName="my-masonry-grid_column"
+          >
+            {images.map((img) => (
+              // 2. Item 包裹每张图片
+              <Item
+                key={img.id}
+                original={img.raw_size_image_url}      // 大图链接
+                thumbnail={img.url}     // 缩略图链接（可同大图）
+                width={img.size.w}
+                height={img.size.h}
+                caption={img.title}
+              >
+                {/* 3. render prop 返回带 ref 的触发元素 */}
+                {({ ref, open }) => (
+                  <div
+                    ref={ref}           // 必须绑定这个 ref
+                    className="image-item"
+                    onClick={() => onSelectImage(img)}  // 单击显示信息
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img src={img.url} onClick={open} ref={ref} loading="lazy" alt={img.title} />
+                  </div>
+                )}
+              </Item>
+            ))}
+          </Masonry>
+        </Gallery>
       </div>
-    </div>
+    </div >
   );
 }

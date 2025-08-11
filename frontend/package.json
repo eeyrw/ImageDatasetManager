@@ -13,9 +13,11 @@
     "dayjs": "^1.11.13",
     "imagesloaded": "^5.0.0",
     "macy": "^2.5.1",
+    "photoswipe": "^5.4.4",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-masonry-css": "^1.0.16",
+    "react-photoswipe-gallery": "^3.1.1",
     "react-querybuilder": "^8.8.2"
   },
   "devDependencies": {

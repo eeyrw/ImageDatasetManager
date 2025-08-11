@@ -21,6 +21,7 @@ class ImageOut(BaseModel):
     id: UUID
     path: str
     url: Optional[str]
+    raw_size_image_url: Optional[str]
     title: Optional[str]
     tags: Optional[List[str]]
     size: Optional[ImageSize]

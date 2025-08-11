@@ -27,6 +27,7 @@ export default function Navbar({
           pageSize={pageSize}
           total={totalItems}
           showSizeChanger
+          showQuickJumper
           pageSizeOptions={[10, 20, 30, 50, 100].map(String)}
           onChange={(p, s) => {
             setPage(p - 1);
