@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends, Query, HTTPException
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .database_conn import get_db
+from .database import get_db
 from .crud import query_dataset_ids_and_build_tree, query_images_by_dataset_ids
-from .schemas import ImageOut,DatasetDirOut, ImageRequest
+from .schemas import ImageRequest
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
