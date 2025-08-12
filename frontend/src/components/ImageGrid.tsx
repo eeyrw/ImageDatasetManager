@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
-import { Button, Space, Switch } from 'antd';
+import { Button, Modal, Space, Switch } from 'antd';
 import AddToFavouriteButton from './AddToFavouriteButton';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -28,7 +28,40 @@ export default function ImageGrid({
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
+  const [selectedImageMap, setSelectedImageMap] = useState<Record<string, ImageInfo>>({});
   const [highlightEnabled, setHighlightEnabled] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+
+
+
+  // 负责同步选中列表和缓存
+  const handleSelectChange = (newSelectedIds: string[]) => {
+    // 找出新增的ID
+    const addedIds = newSelectedIds.filter(id => !selectedImageIds.includes(id));
+    // 找出取消的ID
+    const removedIds = selectedImageIds.filter(id => !newSelectedIds.includes(id));
+
+    // 从当前页images中找到新增的ImageInfo，加入缓存
+    const newEntries = addedIds
+      .map(id => images.find(img => img.id === id))
+      .filter((img): img is ImageInfo => !!img)
+      .reduce((acc, img) => {
+        acc[img.id] = img;
+        return acc;
+      }, {} as Record<string, ImageInfo>);
+
+    // 从缓存删除取消的ID
+    const newCache = { ...selectedImageMap };
+    removedIds.forEach(id => {
+      delete newCache[id];
+    });
+
+    // 合并缓存
+    setSelectedImageMap({ ...newCache, ...newEntries });
+
+    // 更新ID列表
+    setSelectedImageIds(newSelectedIds);
+  };
 
   useEffect(() => {
     if (!collection || externalSelectedIds.length === 0) {
@@ -77,7 +110,7 @@ export default function ImageGrid({
   // 多选操作按钮逻辑
   const selectAll = () => {
     const allIds = images.map(img => img.id);
-    setSelectedImageIds((prev) => Array.from(new Set([...prev, ...allIds])));
+    handleSelectChange(allIds);
   };
 
   const inverseSelect = () => {
@@ -89,12 +122,12 @@ export default function ImageGrid({
         newSelected.add(img.id);
       }
     });
-    setSelectedImageIds(Array.from(newSelected));
+    handleSelectChange(Array.from(newSelected));
   };
 
   const clearSelection = () => {
     const currentPageIds = images.map(img => img.id);
-    setSelectedImageIds(selectedImageIds.filter(id => !currentPageIds.includes(id)));
+    handleSelectChange(selectedImageIds.filter(id => !currentPageIds.includes(id)));
   };
 
   return (
@@ -145,8 +178,29 @@ export default function ImageGrid({
                 selectedImageIds={selectedImageIds}
                 onSuccess={() => setSelectedImageIds([])} // 添加成功后清空选择
               />
+
+              {/* 新增预览按钮 */}
+              <Button size="small" onClick={() => setPreviewVisible(true)}>预览选中</Button>
             </Space>
 
+            {/* 预览弹窗 */}
+            <Modal
+              visible={previewVisible}
+              title="预览已选图片"
+              footer={null}
+              onCancel={() => setPreviewVisible(false)}
+              width={800}
+              bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+            >
+              <ImageGallery
+                images={Object.values(selectedImageMap)}
+                selectedIds={selectedImageIds}
+                onSelectedIdsChange={setSelectedImageIds}
+                onClickImage={onClickImage}
+                selectable={false}  // 预览时不允许选中操作
+                highlightEnabled={false}
+              />
+            </Modal>
             <Space>
               <span style={{ userSelect: 'none' }}>高亮选中</span>
               <Switch
@@ -159,14 +213,14 @@ export default function ImageGrid({
         </div>
 
         {/* 图片瀑布流展示 */}
-          <ImageGallery
-            images={images}
-            selectedIds={selectedImageIds}
-            onSelectedIdsChange={onSelectedIdsChange}
-            onClickImage={onClickImage}
-            selectable={selectable}
-            highlightEnabled={highlightEnabled}
-          />
+        <ImageGallery
+          images={images}
+          selectedIds={selectedImageIds}
+          onSelectedIdsChange={handleSelectChange}
+          onClickImage={onClickImage}
+          selectable={selectable}
+          highlightEnabled={highlightEnabled}
+        />
       </div>
     </div>
   );
