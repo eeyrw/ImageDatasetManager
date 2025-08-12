@@ -3,6 +3,8 @@ import Navbar from './Navbar';
 import Masonry from 'react-masonry-css';
 import { Gallery, Item } from 'react-photoswipe-gallery';
 import 'photoswipe/dist/photoswipe.css'
+import ImageItem from './ImageItem';
+import { Switch, Button, Space } from "antd";
 
 
 export type ImageInfo = {
@@ -31,6 +33,8 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
   const [totalItems, setTotalItems] = useState(0);
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]); // 选中图片ID
+  const [highlightEnabled, setHighlightEnabled] = useState(false);  // 新增开关状态
 
   useEffect(() => {
     if (!collection || selectedIds.length === 0) {
@@ -66,6 +70,44 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
     fetchData();
   }, [collection, selectedIds, page, pageSize]);
 
+  const toggleSelect = (id: string, checked: boolean) => {
+    setSelectedImageIds((prev) =>
+      checked ? [...prev, id] : prev.filter((x) => x !== id)
+    );
+  };
+
+  // 新增：全选当前页所有图片
+  const selectAll = () => {
+    const currentPageIds = images.map((img) => img.id);
+    setSelectedImageIds((prev) => {
+      // 合并去重
+      const merged = new Set([...prev, ...currentPageIds]);
+      return Array.from(merged);
+    });
+  };
+
+  // 新增：反选当前页图片
+  const inverseSelect = () => {
+    const currentPageIds = images.map((img) => img.id);
+    setSelectedImageIds((prev) => {
+      const newSelected = new Set(prev);
+      currentPageIds.forEach((id) => {
+        if (newSelected.has(id)) {
+          newSelected.delete(id);
+        } else {
+          newSelected.add(id);
+        }
+      });
+      return Array.from(newSelected);
+    });
+  };
+
+  // 新增：取消选择当前页所有图片
+  const clearSelection = () => {
+    const currentPageIds = images.map((img) => img.id);
+    setSelectedImageIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
+  };
+
   // 切换 collection / ids 时重置页码
   useEffect(() => {
     setPage(0);
@@ -93,6 +135,29 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
         />
         {loading && <div className="loading-overlay">加载中...</div>}
 
+
+        <div
+          style={{
+            padding: "8px 16px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <Space>
+            <Button size="small" onClick={selectAll}>全选</Button>
+            <Button size="small" onClick={inverseSelect}>反选</Button>
+            <Button size="small" onClick={clearSelection}>取消选择</Button>
+          </Space>
+
+          <Space>
+            <span style={{ userSelect: "none" }}>高亮选中</span>
+            <Switch checked={highlightEnabled} onChange={setHighlightEnabled} size="small" />
+          </Space>
+        </div>
+
         {/* 1. Gallery 包裹整个 Masonry 图片列表 */}
         <Gallery withCaption>
           <Masonry
@@ -100,29 +165,34 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
             className="my-masonry-grid"
             columnClassName="my-masonry-grid_column"
           >
-            {images.map((img) => (
-              // 2. Item 包裹每张图片
-              <Item
-                key={img.id}
-                original={img.raw_size_image_url}      // 大图链接
-                thumbnail={img.url}     // 缩略图链接（可同大图）
-                width={img.size.w}
-                height={img.size.h}
-                caption={img.title}
-              >
-                {/* 3. render prop 返回带 ref 的触发元素 */}
-                {({ ref, open }) => (
-                  <div
-                    ref={ref}           // 必须绑定这个 ref
-                    className="image-item"
-                    onClick={() => onSelectImage(img)}  // 单击显示信息
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <img src={img.url} onClick={open} ref={ref} loading="lazy" alt={img.title} />
-                  </div>
-                )}
-              </Item>
-            ))}
+            {images.map((img) => {
+              const isSelected = selectedImageIds.includes(img.id);
+
+              return (
+                <Item
+                  key={img.id}
+                  original={img.raw_size_image_url}
+                  thumbnail={img.url}
+                  width={img.size.w}
+                  height={img.size.h}
+                  caption={img.title}
+                >
+                  {({ ref, open }) => (
+                    <ImageItem
+                      ref={ref}
+                      src={img.url}
+                      checked={isSelected}
+                      highlighted={!highlightEnabled || selectedImageIds.length === 0 || isSelected}
+                      onCheckedChange={(val) => toggleSelect(img.id, val)}
+                      onClick={() => {
+                        onSelectImage(img);
+                        open();
+                      }}
+                    />
+                  )}
+                </Item>
+              );
+            })}
           </Masonry>
         </Gallery>
       </div>

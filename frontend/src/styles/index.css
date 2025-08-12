@@ -68,16 +68,46 @@ body {
   padding: 16px;
 }
 
-.image-item img {
-  border-radius: 8px;
-  width: 100%;
-  display: block;
-}
-
 /* ================= 加载提示 ================= */
 .loading-overlay {
   text-align: center;
   padding: 12px;
   font-size: 15px;
   color: #999;
+}
+
+/* ImageItem */
+.image-item {
+  position: relative;
+  transition: filter 0.3s ease;
+}
+
+.image-item img {
+  border-radius: 8px;
+  width: 100%;
+  display: block;
+}
+
+.image-checkbox {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  border-radius: 4px;
+}
+
+.image-item.dimmed {
+  filter: brightness(50%);
+  /* 或者用半透明黑色遮罩：
+  position: relative;
+}
+.image-item.dimmed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  border-radius: 4px;
+}
+*/
 }
