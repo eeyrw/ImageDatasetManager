@@ -9,7 +9,7 @@ import { Card, Collapse, Splitter } from 'antd';
 export default function App() {
   const [collection, setCollection] = useState<'dataset' | 'favourite' | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState<ImageInfo | null>(null);
+  const [clickedImage, setClickedImage] = useState<ImageInfo | null>(null);
   // 保存查询参数
   const [queryParams, setQueryParams] = useState(null);
 
@@ -47,22 +47,23 @@ export default function App() {
         </Card>
       </Splitter.Panel>
       <Splitter.Panel style={{ padding: 0, minHeight: 0, height: '100vh', overflow: 'auto' }}>
-        <Collapse defaultActiveKey={['1']}>
-          <Collapse.Panel header="查询条件" key="1">
-            <div style={{ padding: 24 }}>
-              <h2>动态查询表单示例</h2>
-              <DynamicQueryForm onSearch={handleSearch} />
-
-              <h3>查询参数（打印）</h3>
-              <pre>{queryParams ? JSON.stringify(queryParams, null, 2) : "尚未查询"}</pre>
-            </div>
-          </Collapse.Panel>
-        </Collapse>
-        <ImageGrid collection={collection} selectedIds={selectedIds} onSelectImage={setSelectedImage} />
+        <ImageGrid
+          header={<Collapse size="small" ghost={true}>
+            <Collapse.Panel header="条件查询" key="1">
+              <div style={{ padding: 24 }}>
+                <DynamicQueryForm onSearch={handleSearch} />
+                <h3>查询参数（打印）</h3>
+                <pre>{queryParams ? JSON.stringify(queryParams, null, 2) : "尚未查询"}</pre>
+              </div>
+            </Collapse.Panel>
+          </Collapse>}
+          collection={collection}
+          selectedIds={selectedIds}
+          onClickImage={setClickedImage} />
       </Splitter.Panel>
       <Splitter.Panel collapsible defaultSize="15%" min="10%" max="70%">
         <Card title="图片详情" bordered={false} bodyStyle={{ padding: 16 }} style={{ height: '100%', borderRadius: 0, boxShadow: 'none' }}>
-          <ImageDetails data={selectedImage} fields={fields} />
+          <ImageDetails data={clickedImage} fields={fields} />
         </Card>
       </Splitter.Panel>
     </Splitter>

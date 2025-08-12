@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import Masonry from 'react-masonry-css';
 import { Gallery, Item } from 'react-photoswipe-gallery';
@@ -21,12 +21,14 @@ export type ImageInfo = {
 type Props = {
   collection: 'dataset' | 'favourite' | null;
   selectedIds: string[];
-  onSelectImage: (image: ImageInfo) => void;
+  onClickImage: (image: ImageInfo) => void;
+  header?: ReactNode;  // 新增 header 可选属性
+
 };
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-export default function ImageGrid({ collection, selectedIds, onSelectImage }: Props) {
+export default function ImageGrid({ collection, selectedIds, onClickImage, header }: Props) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(100);
   const [totalPages, setTotalPages] = useState(1);
@@ -124,6 +126,13 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
 
   return (
     <div className="main-grid-panel">
+      {/* 新增 header 渲染区域 */}
+      {header && (
+        <div className="image-grid-header">
+          {header}
+        </div>
+      )}
+
       <div className="image-scroll-container">
         <Navbar
           page={page}
@@ -185,7 +194,7 @@ export default function ImageGrid({ collection, selectedIds, onSelectImage }: Pr
                       highlighted={!highlightEnabled || selectedImageIds.length === 0 || isSelected}
                       onCheckedChange={(val) => toggleSelect(img.id, val)}
                       onClick={() => {
-                        onSelectImage(img);
+                        onClickImage(img);
                         open();
                       }}
                     />
