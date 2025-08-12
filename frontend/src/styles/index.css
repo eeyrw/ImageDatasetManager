@@ -1,11 +1,13 @@
-
 /* ================= 全局基础 ================= */
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
   overflow: hidden;
 }
+
 body {
   font-family: sans-serif;
   background: #fafafa;
@@ -13,32 +15,35 @@ body {
 
 /* ================= 导航栏 ================= */
 #nav-bar {
-  position: sticky;
-  top: 0;
-  margin: 0 0 12px 0;
-  z-index: 10;
-  background: #fff;
   padding: 8px 24px;
   font-size: 15px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.image-operation-panel {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border-bottom: 1px solid #f0f0f0;
-  min-height: 56px;
+  background: #ffffff;
+  margin-bottom: 8px;
 }
 
 /* ================= Masonry 图片布局 ================= */
 .my-masonry-grid {
   display: flex;
-  margin-left: -16px; /* gutter size offset */
+  margin-left: -16px;
+  /* gutter size offset */
   width: auto;
 }
+
 .my-masonry-grid_column {
-  padding-left: 16px; /* gutter size */
+  padding-left: 16px;
+  /* gutter size */
   background-clip: padding-box;
 }
-.my-masonry-grid_column > .image-item {
+
+.my-masonry-grid_column>.image-item {
   margin-bottom: 16px;
 }
 
@@ -49,12 +54,14 @@ body {
   width: 100vw;
   position: relative;
 }
+
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+
 .main-grid-panel {
   display: flex;
   flex-direction: column;
@@ -62,6 +69,7 @@ body {
   overflow: hidden;
   position: relative;
 }
+
 .image-scroll-container {
   flex: 1;
   overflow-y: auto;

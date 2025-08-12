@@ -134,37 +134,39 @@ export default function ImageGrid({ collection, selectedIds, onClickImage, heade
       )}
 
       <div className="image-scroll-container">
-        <Navbar
-          page={page}
-          setPage={setPage}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-          totalPages={totalPages}
-          totalItems={totalItems}
-        />
+
         {loading && <div className="loading-overlay">加载中...</div>}
-
-
-        <div
+        <div className='image-operation-panel'
           style={{
-            padding: "8px 16px",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            flexDirection: "column",  // 垂直排列
             flexWrap: "wrap",
-            gap: 12,
+            position: "sticky",
+            top: 0,           // 关键：指定距离顶部的位置
+            zIndex: 10,       // 置顶层级，避免被覆盖
+            width: "100%",     // 建议撑满容器宽度
           }}
         >
-          <Space>
-            <Button size="small" onClick={selectAll}>全选</Button>
-            <Button size="small" onClick={inverseSelect}>反选</Button>
-            <Button size="small" onClick={clearSelection}>取消选择</Button>
-          </Space>
+          <Navbar
+            page={page}
+            setPage={setPage}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            totalPages={totalPages}
+            totalItems={totalItems}
+          />
+          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", padding: 12 }}>
+            <Space>
+              <Button size="small" onClick={selectAll}>全选</Button>
+              <Button size="small" onClick={inverseSelect}>反选</Button>
+              <Button size="small" onClick={clearSelection}>取消选择</Button>
+            </Space>
 
-          <Space>
-            <span style={{ userSelect: "none" }}>高亮选中</span>
-            <Switch checked={highlightEnabled} onChange={setHighlightEnabled} size="small" />
-          </Space>
+            <Space>
+              <span style={{ userSelect: "none" }}>高亮选中</span>
+              <Switch checked={highlightEnabled} onChange={setHighlightEnabled} size="small" />
+            </Space>
+          </div>
         </div>
 
         {/* 1. Gallery 包裹整个 Masonry 图片列表 */}
