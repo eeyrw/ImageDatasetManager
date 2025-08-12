@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_db
 from .crud import query_dataset_ids_and_build_tree, query_images_by_dataset_ids
-from .schemas import ImageRequest
+from .schemas import DatasetTree, ImageOut, ImageRequest, ImagesOut
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -18,11 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/api/datasets/tree")
+@app.get("/api/datasets/tree", response_model=List[DatasetTree])
 async def get_dataset_tree(db: AsyncSession = Depends(get_db)):
     return await query_dataset_ids_and_build_tree(db)
 
-@app.post("/api/images")
+@app.post("/api/images", response_model=ImagesOut)
 async def get_images(
     req: ImageRequest,
     db: AsyncSession = Depends(get_db)

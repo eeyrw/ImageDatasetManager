@@ -17,6 +17,7 @@ class ImageSize(BaseModel):
     w: Optional[int]
     h: Optional[int]
 
+
 class ImageOut(BaseModel):
     id: UUID
     path: str
@@ -27,6 +28,12 @@ class ImageOut(BaseModel):
     size: Optional[ImageSize]
     score_quality: Optional[float]
     score_aesthetics: Optional[float]
+
+
+class ImagesOut(BaseModel):
+    total: int
+    images: List[ImageOut]
+
 
 class ImageRequest(BaseModel):
     ids: List[UUID]
