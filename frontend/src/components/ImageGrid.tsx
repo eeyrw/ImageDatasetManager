@@ -28,40 +28,9 @@ export default function ImageGrid({
   const [images, setImages] = useState<ImageInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
-  const [selectedImageMap, setSelectedImageMap] = useState<Record<string, ImageInfo>>({});
   const [highlightEnabled, setHighlightEnabled] = useState(false);
-  const [previewVisible, setPreviewVisible] = useState(false);
+  const [showOnlySelected, setShowOnlySelected] = useState(false);  // 新增只看已选开关
 
-
-
-  // 负责同步选中列表和缓存
-  const handleSelectChange = (newSelectedIds: string[]) => {
-    // 找出新增的ID
-    const addedIds = newSelectedIds.filter(id => !selectedImageIds.includes(id));
-    // 找出取消的ID
-    const removedIds = selectedImageIds.filter(id => !newSelectedIds.includes(id));
-
-    // 从当前页images中找到新增的ImageInfo，加入缓存
-    const newEntries = addedIds
-      .map(id => images.find(img => img.id === id))
-      .filter((img): img is ImageInfo => !!img)
-      .reduce((acc, img) => {
-        acc[img.id] = img;
-        return acc;
-      }, {} as Record<string, ImageInfo>);
-
-    // 从缓存删除取消的ID
-    const newCache = { ...selectedImageMap };
-    removedIds.forEach(id => {
-      delete newCache[id];
-    });
-
-    // 合并缓存
-    setSelectedImageMap({ ...newCache, ...newEntries });
-
-    // 更新ID列表
-    setSelectedImageIds(newSelectedIds);
-  };
 
   useEffect(() => {
     if (!collection || externalSelectedIds.length === 0) {
@@ -102,32 +71,41 @@ export default function ImageGrid({
     setSelectedImageIds([]);
   }, [collection, externalSelectedIds]);
 
-  // 选择状态变更
-  const onSelectedIdsChange = (ids: string[]) => {
-    setSelectedImageIds(ids);
+  // 根据开关过滤图片
+  const displayedImages = showOnlySelected
+    ? images.filter(img => selectedImageIds.includes(img.id))
+    : images;
+
+  const toggleSelect = (id: string, checked: boolean) => {
+    setSelectedImageIds(prev =>
+      checked ? [...prev, id] : prev.filter(x => x !== id)
+    );
   };
 
-  // 多选操作按钮逻辑
   const selectAll = () => {
-    const allIds = images.map(img => img.id);
-    handleSelectChange(allIds);
+    const currentPageIds = images.map(img => img.id);
+    setSelectedImageIds(prev => {
+      const setPrev = new Set(prev);
+      currentPageIds.forEach(id => setPrev.add(id));
+      return Array.from(setPrev);
+    });
   };
 
   const inverseSelect = () => {
-    const newSelected = new Set(selectedImageIds);
-    images.forEach(img => {
-      if (newSelected.has(img.id)) {
-        newSelected.delete(img.id);
-      } else {
-        newSelected.add(img.id);
-      }
+    const currentPageIds = images.map(img => img.id);
+    setSelectedImageIds(prev => {
+      const setPrev = new Set(prev);
+      currentPageIds.forEach(id => {
+        if (setPrev.has(id)) setPrev.delete(id);
+        else setPrev.add(id);
+      });
+      return Array.from(setPrev);
     });
-    handleSelectChange(Array.from(newSelected));
   };
 
   const clearSelection = () => {
     const currentPageIds = images.map(img => img.id);
-    handleSelectChange(selectedImageIds.filter(id => !currentPageIds.includes(id)));
+    setSelectedImageIds(prev => prev.filter(id => !currentPageIds.includes(id)));
   };
 
   return (
@@ -174,33 +152,14 @@ export default function ImageGrid({
               <Button size="small" onClick={clearSelection}>
                 取消选择
               </Button>
-              <AddToFavouriteButton
-                selectedImageIds={selectedImageIds}
-                onSuccess={() => setSelectedImageIds([])} // 添加成功后清空选择
+              {/* 新增只看已选切换开关 */}
+              <Switch
+                checked={showOnlySelected}
+                onChange={setShowOnlySelected}
+                checkedChildren="只看选中"
+                unCheckedChildren="全部图片"
               />
-
-              {/* 新增预览按钮 */}
-              <Button size="small" onClick={() => setPreviewVisible(true)}>预览选中</Button>
             </Space>
-
-            {/* 预览弹窗 */}
-            <Modal
-              visible={previewVisible}
-              title="预览已选图片"
-              footer={null}
-              onCancel={() => setPreviewVisible(false)}
-              width={800}
-              bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
-            >
-              <ImageGallery
-                images={Object.values(selectedImageMap)}
-                selectedIds={selectedImageIds}
-                onSelectedIdsChange={setSelectedImageIds}
-                onClickImage={onClickImage}
-                selectable={false}  // 预览时不允许选中操作
-                highlightEnabled={false}
-              />
-            </Modal>
             <Space>
               <span style={{ userSelect: 'none' }}>高亮选中</span>
               <Switch
@@ -212,13 +171,15 @@ export default function ImageGrid({
           </div>
         </div>
 
-        {/* 图片瀑布流展示 */}
         <ImageGallery
-          images={images}
+          images={displayedImages}
           selectedIds={selectedImageIds}
-          onSelectedIdsChange={handleSelectChange}
+          onSelectedIdsChange={(newIds) => {
+            // 这里同步ImageGrid内选中状态
+            setSelectedImageIds(newIds);
+          }}
           onClickImage={onClickImage}
-          selectable={selectable}
+          selectable={true}
           highlightEnabled={highlightEnabled}
         />
       </div>

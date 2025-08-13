@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import TreeSelector, { TreeItem } from './TreeSelector';
 import { Tabs } from 'antd';
+import { createClient } from '../client/client';
+import { client } from '../client/client.gen';
+import { DatasetTreeSchema } from '../client/schemas.gen';
+import { getDatasetTreeApiDatasetsTreeGet } from '../client/sdk.gen';
+import type { DatasetTree } from '../client/types.gen';
+
 
 type Props = {
   onSelect: (collection: 'dataset' | 'favourite', ids: string[]) => void;
@@ -17,15 +23,14 @@ export default function CollectionSelector({ onSelect }: Props) {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/datasets/tree`)
-      .then(res => res.json())
-      .then(setDatasetTree)
-      //.catch(() => setDatasetTree(mockDatasetTree));
-
-    fetch(`${baseUrl}/api/favourites`)
-      .then(res => res.json())
-      .then(data => setFavouriteTree(data))
-      //.catch(() => setFavouriteTree(mockFavourites));
+    (async () => {
+      const { data, error } = await getDatasetTreeApiDatasetsTreeGet();
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setDatasetTree(data!);
+    })();
   }, []);
 
   const handleSelect = (collection: 'dataset' | 'favourite') => (ids: string[]) => {
