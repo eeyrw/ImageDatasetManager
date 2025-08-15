@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .schemas import ImageOut, ImageSize
-from .models import File, Image,Dataset,DatasetDir, ImageCaption, ImageFeature, ImageTag
+from .models import File, Image,Dataset,DatasetDir, ImageCaption, ImageFeature, ImagePose, ImageTag
 from .build_forest_from_paths import build_forest_with_root_filter
 from .config import settings
 from sqlalchemy.orm import aliased
@@ -130,6 +130,7 @@ async def query_images_by_dataset_ids(
     result = await db.execute(stmt)
     rows = result.all()
 
+    # 总数
     count_stmt = select(func.count()).select_from(Image).where(Image.dataset_id.in_(dataset_ids))
     count_result = await db.execute(count_stmt)
     total_count = count_result.scalar_one()
@@ -138,22 +139,36 @@ async def query_images_by_dataset_ids(
 
     captions_map = {}
     tags_map = {}
+    poses_map = {}
 
     if file_ids:
+        # captions
         captions_stmt = select(ImageCaption).where(ImageCaption.file_id.in_(file_ids))
-        tags_stmt = select(ImageTag).where(ImageTag.file_id.in_(file_ids))
         captions_result = await db.execute(captions_stmt)
-        tags_result = await db.execute(tags_stmt)
         captions = captions_result.scalars().all()
-        tags = tags_result.scalars().all()
-
         for c in captions:
             captions_map.setdefault(c.file_id, []).append(c)
 
+        # tags
+        tags_stmt = select(ImageTag).where(ImageTag.file_id.in_(file_ids))
+        tags_result = await db.execute(tags_stmt)
+        tags = tags_result.scalars().all()
         tags_map = {t.file_id: t.tags for t in tags}
 
-    images_out = []
+        # poses
+        poses_stmt = select(ImagePose).where(ImagePose.file_id.in_(file_ids))
+        poses_result = await db.execute(poses_stmt)
+        poses = poses_result.scalars().all()
+        for p in poses:
+            poses_map.setdefault(p.file_id, []).append({
+                "pose_index": p.pose_index,
+                "bbox": p.bbox,
+                "invalid_kpts_idx": p.invalid_kpts_idx,
+                "kpts_x": p.kpts_x,
+                "kpts_y": p.kpts_y,
+            })
 
+    images_out = []
     for image, file, dataset_dir, feature in rows:
         caps = captions_map.get(file.id, [])
         title = None
@@ -171,7 +186,7 @@ async def query_images_by_dataset_ids(
 
         images_out.append({
             "id": image.id,
-            "path": str(Path(dataset_dir.dir_path)/Path(file.file_path)),
+            "path": str(Path(dataset_dir.dir_path) / Path(file.file_path)),
             "url": url,
             "raw_size_image_url": raw_size_image_url,
             "title": title,
@@ -180,6 +195,7 @@ async def query_images_by_dataset_ids(
                      "h": feature.height if feature else None} if feature else None,
             "score_quality": feature.quality_score if feature else None,
             "score_aesthetics": feature.aesthetic_score if feature else None,
+            "poses": poses_map.get(file.id, []),  # 新增
         })
 
     return {"total": total_count, "images": images_out}

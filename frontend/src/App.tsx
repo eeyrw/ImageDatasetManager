@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import CollectionSelector from './components/CollectionSelector';
 import ImageGrid from './components/ImageGrid';
 import ImageDetails, { FieldConfig } from './components/ImageDetails';
-import { ImageInfo } from './components/ImageGrid';
+import { ImageInfo } from './components/ImageGallery';
 import DynamicQueryForm from "./components/DynamicQueryForm";
 import { Card, Collapse, Splitter } from 'antd';
 

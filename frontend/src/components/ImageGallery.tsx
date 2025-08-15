@@ -10,6 +10,7 @@ export type ImageInfo = {
   raw_size_image_url: string;
   title: string;
   size: { w: number; h: number };
+  poses:[];
 };
 
 type Props = {

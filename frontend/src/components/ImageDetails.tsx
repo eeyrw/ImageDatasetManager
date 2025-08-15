@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Tag, Descriptions,Flex } from 'antd';
-
+import ZoomablePoseOverlay from './ZoomablePoseOverlay';
 export type FieldConfig = {
   key: string;
   type: 'image' | 'text' | 'number' | 'tags'| 'size';
@@ -29,6 +29,14 @@ export default function ImageDetails({ data, fields }: { data: any | null, field
           />
         </div>
       )}
+
+          <ZoomablePoseOverlay
+            image={data}
+            thumbnailWidth={300}  // 缩略图宽度
+            showBBox={true}
+            showFaceEdges={true}
+          />
+
       <Descriptions
         column={1}
         layout="vertical"

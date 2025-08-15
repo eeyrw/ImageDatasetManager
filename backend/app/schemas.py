@@ -28,6 +28,7 @@ class ImageOut(BaseModel):
     size: Optional[ImageSize]
     score_quality: Optional[float]
     score_aesthetics: Optional[float]
+    poses:Optional[List]
 
 
 class ImagesOut(BaseModel):
