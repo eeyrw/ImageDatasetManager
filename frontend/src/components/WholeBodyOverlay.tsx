@@ -317,8 +317,8 @@ export default function WholeBodyOverlay({
                 <rect
                   x={pose.bbox[0] * imgWidth}
                   y={pose.bbox[1] * imgHeight}
-                  width={pose.bbox[2] * imgWidth}
-                  height={pose.bbox[3] * imgHeight}
+                  width={(pose.bbox[2] - pose.bbox[0]) * imgWidth}
+                  height={(pose.bbox[3] - pose.bbox[1]) * imgHeight}
                   fill="none"
                   stroke={isHover ? "#00e0ff" : "#00ff88"}
                   strokeWidth={isHover ? 2.5 : 1.5}
