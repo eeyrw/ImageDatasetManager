@@ -55,34 +55,34 @@ const NAME_TO_ID: Record<string, number> = {
 
 /** ---------- 关键点颜色（来自 keypoint_info.color） ---------- */
 const KEYPOINT_COLORS: Record<number, string> = {
-  0: rgbToHex([51,153,255]), 1: rgbToHex([51,153,255]), 2: rgbToHex([51,153,255]),
-  3: rgbToHex([51,153,255]), 4: rgbToHex([51,153,255]),
-  5: rgbToHex([0,255,0]), 6: rgbToHex([255,128,0]), 7: rgbToHex([0,255,0]), 8: rgbToHex([255,128,0]),
-  9: rgbToHex([0,255,0]), 10: rgbToHex([255,128,0]),
-  11: rgbToHex([0,255,0]), 12: rgbToHex([255,128,0]),
-  13: rgbToHex([0,255,0]), 14: rgbToHex([255,128,0]),
-  15: rgbToHex([0,255,0]), 16: rgbToHex([255,128,0]),
-  17: rgbToHex([255,128,0]), 18: rgbToHex([255,128,0]), 19: rgbToHex([255,128,0]),
-  20: rgbToHex([255,128,0]), 21: rgbToHex([255,128,0]), 22: rgbToHex([255,128,0]),
+  0: rgbToHex([51, 153, 255]), 1: rgbToHex([51, 153, 255]), 2: rgbToHex([51, 153, 255]),
+  3: rgbToHex([51, 153, 255]), 4: rgbToHex([51, 153, 255]),
+  5: rgbToHex([0, 255, 0]), 6: rgbToHex([255, 128, 0]), 7: rgbToHex([0, 255, 0]), 8: rgbToHex([255, 128, 0]),
+  9: rgbToHex([0, 255, 0]), 10: rgbToHex([255, 128, 0]),
+  11: rgbToHex([0, 255, 0]), 12: rgbToHex([255, 128, 0]),
+  13: rgbToHex([0, 255, 0]), 14: rgbToHex([255, 128, 0]),
+  15: rgbToHex([0, 255, 0]), 16: rgbToHex([255, 128, 0]),
+  17: rgbToHex([255, 128, 0]), 18: rgbToHex([255, 128, 0]), 19: rgbToHex([255, 128, 0]),
+  20: rgbToHex([255, 128, 0]), 21: rgbToHex([255, 128, 0]), 22: rgbToHex([255, 128, 0]),
 
   // face-0..67 (23..90): all white
-  ...Object.fromEntries(Array.from({ length: 68 }, (_, i) => [23 + i, rgbToHex([255,255,255])])),
+  ...Object.fromEntries(Array.from({ length: 68 }, (_, i) => [23 + i, rgbToHex([255, 255, 255])])),
 
   // left hand colors
-  91: rgbToHex([255,255,255]),
-  92: rgbToHex([255,128,0]), 93: rgbToHex([255,128,0]), 94: rgbToHex([255,128,0]), 95: rgbToHex([255,128,0]),
-  96: rgbToHex([255,153,255]), 97: rgbToHex([255,153,255]), 98: rgbToHex([255,153,255]), 99: rgbToHex([255,153,255]),
-  100: rgbToHex([102,178,255]), 101: rgbToHex([102,178,255]), 102: rgbToHex([102,178,255]), 103: rgbToHex([102,178,255]),
-  104: rgbToHex([255,51,51]), 105: rgbToHex([255,51,51]), 106: rgbToHex([255,51,51]), 107: rgbToHex([255,51,51]),
-  108: rgbToHex([0,255,0]), 109: rgbToHex([0,255,0]), 110: rgbToHex([0,255,0]), 111: rgbToHex([0,255,0]),
+  91: rgbToHex([255, 255, 255]),
+  92: rgbToHex([255, 128, 0]), 93: rgbToHex([255, 128, 0]), 94: rgbToHex([255, 128, 0]), 95: rgbToHex([255, 128, 0]),
+  96: rgbToHex([255, 153, 255]), 97: rgbToHex([255, 153, 255]), 98: rgbToHex([255, 153, 255]), 99: rgbToHex([255, 153, 255]),
+  100: rgbToHex([102, 178, 255]), 101: rgbToHex([102, 178, 255]), 102: rgbToHex([102, 178, 255]), 103: rgbToHex([102, 178, 255]),
+  104: rgbToHex([255, 51, 51]), 105: rgbToHex([255, 51, 51]), 106: rgbToHex([255, 51, 51]), 107: rgbToHex([255, 51, 51]),
+  108: rgbToHex([0, 255, 0]), 109: rgbToHex([0, 255, 0]), 110: rgbToHex([0, 255, 0]), 111: rgbToHex([0, 255, 0]),
 
   // right hand colors
-  112: rgbToHex([255,255,255]),
-  113: rgbToHex([255,128,0]), 114: rgbToHex([255,128,0]), 115: rgbToHex([255,128,0]), 116: rgbToHex([255,128,0]),
-  117: rgbToHex([255,153,255]), 118: rgbToHex([255,153,255]), 119: rgbToHex([255,153,255]), 120: rgbToHex([255,153,255]),
-  121: rgbToHex([102,178,255]), 122: rgbToHex([102,178,255]), 123: rgbToHex([102,178,255]), 124: rgbToHex([102,178,255]),
-  125: rgbToHex([255,51,51]), 126: rgbToHex([255,51,51]), 127: rgbToHex([255,51,51]), 128: rgbToHex([255,51,51]),
-  129: rgbToHex([0,255,0]), 130: rgbToHex([0,255,0]), 131: rgbToHex([0,255,0]), 132: rgbToHex([0,255,0]),
+  112: rgbToHex([255, 255, 255]),
+  113: rgbToHex([255, 128, 0]), 114: rgbToHex([255, 128, 0]), 115: rgbToHex([255, 128, 0]), 116: rgbToHex([255, 128, 0]),
+  117: rgbToHex([255, 153, 255]), 118: rgbToHex([255, 153, 255]), 119: rgbToHex([255, 153, 255]), 120: rgbToHex([255, 153, 255]),
+  121: rgbToHex([102, 178, 255]), 122: rgbToHex([102, 178, 255]), 123: rgbToHex([102, 178, 255]), 124: rgbToHex([102, 178, 255]),
+  125: rgbToHex([255, 51, 51]), 126: rgbToHex([255, 51, 51]), 127: rgbToHex([255, 51, 51]), 128: rgbToHex([255, 51, 51]),
+  129: rgbToHex([0, 255, 0]), 130: rgbToHex([0, 255, 0]), 131: rgbToHex([0, 255, 0]), 132: rgbToHex([0, 255, 0]),
 };
 
 /** ---------- 骨架（按你的 skeleton_info，用名称映射到索引；并保留颜色） ---------- */
@@ -90,75 +90,75 @@ type Edge = { a: number; b: number; color: string };
 
 // skeleton_info.links（名称） + 颜色
 const SKELETON_BY_NAME: Array<{ link: [string, string]; color: [number, number, number] }> = [
-  { link: ['left_ankle','left_knee'], color: [0,255,0] },
-  { link: ['left_knee','left_hip'], color: [0,255,0] },
-  { link: ['right_ankle','right_knee'], color: [255,128,0] },
-  { link: ['right_knee','right_hip'], color: [255,128,0] },
-  { link: ['left_hip','right_hip'], color: [51,153,255] },
-  { link: ['left_shoulder','left_hip'], color: [51,153,255] },
-  { link: ['right_shoulder','right_hip'], color: [51,153,255] },
-  { link: ['left_shoulder','right_shoulder'], color: [51,153,255] },
-  { link: ['left_shoulder','left_elbow'], color: [0,255,0] },
-  { link: ['right_shoulder','right_elbow'], color: [255,128,0] },
-  { link: ['left_elbow','left_wrist'], color: [0,255,0] },
-  { link: ['right_elbow','right_wrist'], color: [255,128,0] },
-  { link: ['left_eye','right_eye'], color: [51,153,255] },
-  { link: ['nose','left_eye'], color: [51,153,255] },
-  { link: ['nose','right_eye'], color: [51,153,255] },
-  { link: ['left_eye','left_ear'], color: [51,153,255] },
-  { link: ['right_eye','right_ear'], color: [51,153,255] },
-  { link: ['left_ear','left_shoulder'], color: [51,153,255] },
-  { link: ['right_ear','right_shoulder'], color: [51,153,255] },
-  { link: ['left_ankle','left_big_toe'], color: [0,255,0] },
-  { link: ['left_ankle','left_small_toe'], color: [0,255,0] },
-  { link: ['left_ankle','left_heel'], color: [0,255,0] },
-  { link: ['right_ankle','right_big_toe'], color: [255,128,0] },
-  { link: ['right_ankle','right_small_toe'], color: [255,128,0] },
-  { link: ['right_ankle','right_heel'], color: [255,128,0] },
+  { link: ['left_ankle', 'left_knee'], color: [0, 255, 0] },
+  { link: ['left_knee', 'left_hip'], color: [0, 255, 0] },
+  { link: ['right_ankle', 'right_knee'], color: [255, 128, 0] },
+  { link: ['right_knee', 'right_hip'], color: [255, 128, 0] },
+  { link: ['left_hip', 'right_hip'], color: [51, 153, 255] },
+  { link: ['left_shoulder', 'left_hip'], color: [51, 153, 255] },
+  { link: ['right_shoulder', 'right_hip'], color: [51, 153, 255] },
+  { link: ['left_shoulder', 'right_shoulder'], color: [51, 153, 255] },
+  { link: ['left_shoulder', 'left_elbow'], color: [0, 255, 0] },
+  { link: ['right_shoulder', 'right_elbow'], color: [255, 128, 0] },
+  { link: ['left_elbow', 'left_wrist'], color: [0, 255, 0] },
+  { link: ['right_elbow', 'right_wrist'], color: [255, 128, 0] },
+  { link: ['left_eye', 'right_eye'], color: [51, 153, 255] },
+  { link: ['nose', 'left_eye'], color: [51, 153, 255] },
+  { link: ['nose', 'right_eye'], color: [51, 153, 255] },
+  { link: ['left_eye', 'left_ear'], color: [51, 153, 255] },
+  { link: ['right_eye', 'right_ear'], color: [51, 153, 255] },
+  { link: ['left_ear', 'left_shoulder'], color: [51, 153, 255] },
+  { link: ['right_ear', 'right_shoulder'], color: [51, 153, 255] },
+  { link: ['left_ankle', 'left_big_toe'], color: [0, 255, 0] },
+  { link: ['left_ankle', 'left_small_toe'], color: [0, 255, 0] },
+  { link: ['left_ankle', 'left_heel'], color: [0, 255, 0] },
+  { link: ['right_ankle', 'right_big_toe'], color: [255, 128, 0] },
+  { link: ['right_ankle', 'right_small_toe'], color: [255, 128, 0] },
+  { link: ['right_ankle', 'right_heel'], color: [255, 128, 0] },
 
   // left hand
-  { link: ['left_hand_root','left_thumb1'], color: [255,128,0] },
-  { link: ['left_thumb1','left_thumb2'], color: [255,128,0] },
-  { link: ['left_thumb2','left_thumb3'], color: [255,128,0] },
-  { link: ['left_thumb3','left_thumb4'], color: [255,128,0] },
-  { link: ['left_hand_root','left_forefinger1'], color: [255,153,255] },
-  { link: ['left_forefinger1','left_forefinger2'], color: [255,153,255] },
-  { link: ['left_forefinger2','left_forefinger3'], color: [255,153,255] },
-  { link: ['left_forefinger3','left_forefinger4'], color: [255,153,255] },
-  { link: ['left_hand_root','left_middle_finger1'], color: [102,178,255] },
-  { link: ['left_middle_finger1','left_middle_finger2'], color: [102,178,255] },
-  { link: ['left_middle_finger2','left_middle_finger3'], color: [102,178,255] },
-  { link: ['left_middle_finger3','left_middle_finger4'], color: [102,178,255] },
-  { link: ['left_hand_root','left_ring_finger1'], color: [255,51,51] },
-  { link: ['left_ring_finger1','left_ring_finger2'], color: [255,51,51] },
-  { link: ['left_ring_finger2','left_ring_finger3'], color: [255,51,51] },
-  { link: ['left_ring_finger3','left_ring_finger4'], color: [255,51,51] },
-  { link: ['left_hand_root','left_pinky_finger1'], color: [0,255,0] },
-  { link: ['left_pinky_finger1','left_pinky_finger2'], color: [0,255,0] },
-  { link: ['left_pinky_finger2','left_pinky_finger3'], color: [0,255,0] },
-  { link: ['left_pinky_finger3','left_pinky_finger4'], color: [0,255,0] },
+  { link: ['left_hand_root', 'left_thumb1'], color: [255, 128, 0] },
+  { link: ['left_thumb1', 'left_thumb2'], color: [255, 128, 0] },
+  { link: ['left_thumb2', 'left_thumb3'], color: [255, 128, 0] },
+  { link: ['left_thumb3', 'left_thumb4'], color: [255, 128, 0] },
+  { link: ['left_hand_root', 'left_forefinger1'], color: [255, 153, 255] },
+  { link: ['left_forefinger1', 'left_forefinger2'], color: [255, 153, 255] },
+  { link: ['left_forefinger2', 'left_forefinger3'], color: [255, 153, 255] },
+  { link: ['left_forefinger3', 'left_forefinger4'], color: [255, 153, 255] },
+  { link: ['left_hand_root', 'left_middle_finger1'], color: [102, 178, 255] },
+  { link: ['left_middle_finger1', 'left_middle_finger2'], color: [102, 178, 255] },
+  { link: ['left_middle_finger2', 'left_middle_finger3'], color: [102, 178, 255] },
+  { link: ['left_middle_finger3', 'left_middle_finger4'], color: [102, 178, 255] },
+  { link: ['left_hand_root', 'left_ring_finger1'], color: [255, 51, 51] },
+  { link: ['left_ring_finger1', 'left_ring_finger2'], color: [255, 51, 51] },
+  { link: ['left_ring_finger2', 'left_ring_finger3'], color: [255, 51, 51] },
+  { link: ['left_ring_finger3', 'left_ring_finger4'], color: [255, 51, 51] },
+  { link: ['left_hand_root', 'left_pinky_finger1'], color: [0, 255, 0] },
+  { link: ['left_pinky_finger1', 'left_pinky_finger2'], color: [0, 255, 0] },
+  { link: ['left_pinky_finger2', 'left_pinky_finger3'], color: [0, 255, 0] },
+  { link: ['left_pinky_finger3', 'left_pinky_finger4'], color: [0, 255, 0] },
 
   // right hand
-  { link: ['right_hand_root','right_thumb1'], color: [255,128,0] },
-  { link: ['right_thumb1','right_thumb2'], color: [255,128,0] },
-  { link: ['right_thumb2','right_thumb3'], color: [255,128,0] },
-  { link: ['right_thumb3','right_thumb4'], color: [255,128,0] },
-  { link: ['right_hand_root','right_forefinger1'], color: [255,153,255] },
-  { link: ['right_forefinger1','right_forefinger2'], color: [255,153,255] },
-  { link: ['right_forefinger2','right_forefinger3'], color: [255,153,255] },
-  { link: ['right_forefinger3','right_forefinger4'], color: [255,153,255] },
-  { link: ['right_hand_root','right_middle_finger1'], color: [102,178,255] },
-  { link: ['right_middle_finger1','right_middle_finger2'], color: [102,178,255] },
-  { link: ['right_middle_finger2','right_middle_finger3'], color: [102,178,255] },
-  { link: ['right_middle_finger3','right_middle_finger4'], color: [102,178,255] },
-  { link: ['right_hand_root','right_ring_finger1'], color: [255,51,51] },
-  { link: ['right_ring_finger1','right_ring_finger2'], color: [255,51,51] },
-  { link: ['right_ring_finger2','right_ring_finger3'], color: [255,51,51] },
-  { link: ['right_ring_finger3','right_ring_finger4'], color: [255,51,51] },
-  { link: ['right_hand_root','right_pinky_finger1'], color: [0,255,0] },
-  { link: ['right_pinky_finger1','right_pinky_finger2'], color: [0,255,0] },
-  { link: ['right_pinky_finger2','right_pinky_finger3'], color: [0,255,0] },
-  { link: ['right_pinky_finger3','right_pinky_finger4'], color: [0,255,0] },
+  { link: ['right_hand_root', 'right_thumb1'], color: [255, 128, 0] },
+  { link: ['right_thumb1', 'right_thumb2'], color: [255, 128, 0] },
+  { link: ['right_thumb2', 'right_thumb3'], color: [255, 128, 0] },
+  { link: ['right_thumb3', 'right_thumb4'], color: [255, 128, 0] },
+  { link: ['right_hand_root', 'right_forefinger1'], color: [255, 153, 255] },
+  { link: ['right_forefinger1', 'right_forefinger2'], color: [255, 153, 255] },
+  { link: ['right_forefinger2', 'right_forefinger3'], color: [255, 153, 255] },
+  { link: ['right_forefinger3', 'right_forefinger4'], color: [255, 153, 255] },
+  { link: ['right_hand_root', 'right_middle_finger1'], color: [102, 178, 255] },
+  { link: ['right_middle_finger1', 'right_middle_finger2'], color: [102, 178, 255] },
+  { link: ['right_middle_finger2', 'right_middle_finger3'], color: [102, 178, 255] },
+  { link: ['right_middle_finger3', 'right_middle_finger4'], color: [102, 178, 255] },
+  { link: ['right_hand_root', 'right_ring_finger1'], color: [255, 51, 51] },
+  { link: ['right_ring_finger1', 'right_ring_finger2'], color: [255, 51, 51] },
+  { link: ['right_ring_finger2', 'right_ring_finger3'], color: [255, 51, 51] },
+  { link: ['right_ring_finger3', 'right_ring_finger4'], color: [255, 51, 51] },
+  { link: ['right_hand_root', 'right_pinky_finger1'], color: [0, 255, 0] },
+  { link: ['right_pinky_finger1', 'right_pinky_finger2'], color: [0, 255, 0] },
+  { link: ['right_pinky_finger2', 'right_pinky_finger3'], color: [0, 255, 0] },
+  { link: ['right_pinky_finger3', 'right_pinky_finger4'], color: [0, 255, 0] },
 ];
 
 // 转为索引版
@@ -256,10 +256,10 @@ export default function WholeBodyOverlay({
             return (
               <line
                 key={`e-${pIdx}-${ei}`}
-                x1={A.x*imgWidth}
-                y1={A.y*imgHeight}
-                x2={B.x*imgWidth}
-                y2={B.y*imgHeight}
+                x1={A.x * imgWidth}
+                y1={A.y * imgHeight}
+                x2={B.x * imgWidth}
+                y2={B.y * imgHeight}
                 stroke={color}
                 strokeOpacity={isHover ? 0.95 : 0.75}
                 strokeWidth={isHover ? 3 : 2}
@@ -273,11 +273,14 @@ export default function WholeBodyOverlay({
             if (!pt.valid) return null;
             const active = hoverKp?.pose === pIdx && hoverKp.kp === i;
             const r = active ? pointRadius * 1.9 : pointRadius;
+            const cx = pt.x * imgWidth;
+            const cy = pt.y * imgHeight;
+
             return (
               <g key={`p-${pIdx}-${i}`}>
                 <circle
-                  cx={pt.x*imgWidth}
-                  cy={pt.y*imgHeight}
+                  cx={cx}
+                  cy={cy}
                   r={r}
                   fill={pt.color}
                   stroke="#000"
@@ -286,11 +289,19 @@ export default function WholeBodyOverlay({
                   onMouseEnter={() => setHoverKp({ pose: pIdx, kp: i })}
                   onMouseLeave={() => setHoverKp(null)}
                 />
-                {/* 小标签（hover时显示 名称+索引） */}
+                {/* Tooltip: hover 时显示关键点名字 */}
                 {active && (
-                  <g transform={`translate(${pt.x + 6}, ${pt.y - 6})`}>
-                    <rect x={-3} y={-10} width={120} height={18} rx={4} ry={4} fill="rgba(0,0,0,0.6)" />
-                    <text x={3} y={3} fontSize={10} fill="#fff">
+                  <g transform={`translate(${cx + 8}, ${cy - 8})`}>
+                    <rect
+                      x={-4}
+                      y={-12}
+                      width={indexToName(i).length * 7 + 20}
+                      height={18}
+                      rx={4}
+                      ry={4}
+                      fill="rgba(0,0,0,0.7)"
+                    />
+                    <text x={4} y={2} fontSize={11} fill="#fff">
                       {indexToName(i)} ({i})
                     </text>
                   </g>
@@ -304,10 +315,10 @@ export default function WholeBodyOverlay({
             showBBox && pose.bbox
               ? (
                 <rect
-                  x={pose.bbox[0]*imgWidth}
-                  y={pose.bbox[1]*imgHeight}
-                  width={pose.bbox[2]*imgWidth}
-                  height={pose.bbox[3]*imgHeight}
+                  x={pose.bbox[0] * imgWidth}
+                  y={pose.bbox[1] * imgHeight}
+                  width={pose.bbox[2] * imgWidth}
+                  height={pose.bbox[3] * imgHeight}
                   fill="none"
                   stroke={isHover ? "#00e0ff" : "#00ff88"}
                   strokeWidth={isHover ? 2.5 : 1.5}
