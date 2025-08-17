@@ -1,66 +1,45 @@
-import os
 import uuid
 
-def build_forest_with_root_filter(dir_records, root_paths):
+
+def build_forest_from_abs_paths(dir_records):
     """
-    dir_records: List[Tuple[UUID, str]]  # 数据库中 (id, 绝对路径)
-    root_paths: List[str]                # 支持多个根目录，绝对路径
+    dir_records: List[Tuple[UUID, str]]  # (id, abs_path)，路径保证是“绝对路径”(以 / 开头)
 
     返回：
         List[树]，每棵树是 dict，格式同 build_dir_tree_with_ids
     """
 
-    # 先对root_paths做规范化，方便比较
-    norm_roots = [os.path.normpath(rp) for rp in root_paths]
-
-    # 按根目录分组，key = root_path，value = list of (id, relative_path)
-    groups = {rp: [] for rp in norm_roots}
-    others = []  # 不属于任何根的，单独成树
+    # 先分组：按第一层目录名作为不同的树
+    top_level_map = {}  # key = 顶层目录名, value = list of (id, relative_path)
 
     for dir_id, abs_path in dir_records:
-        abs_norm = os.path.normpath(abs_path)
-        matched_root = None
+        # 去掉开头的 "/"，再按 "/" 拆分
+        parts = [p for p in abs_path.strip("/").split("/") if p]
 
-        for root in norm_roots:
-            try:
-                rel_path = os.path.relpath(abs_norm, root)
-                # rel_path 如果以 '..' 开头，说明不属于该root
-                if not rel_path.startswith("..") and not os.path.isabs(rel_path):
-                    matched_root = root
-                    groups[root].append((dir_id, rel_path))
-                    break
-            except ValueError:
-                # windows 下可能异常，忽略
-                continue
+        if not parts:
+            continue  # 如果 abs_path == "/" 就跳过
 
-        if matched_root is None:
-            # 不属于任何root的放others
-            others.append((dir_id, abs_norm))
+        top = parts[0]  # 第一层目录名
+        rel_parts = parts[1:]  # 去掉顶层，作为子路径
 
-    # 对每个组构造树
+        rel_path = "/".join(rel_parts) if rel_parts else ""
+        if top not in top_level_map:
+            top_level_map[top] = []
+        top_level_map[top].append((dir_id, rel_path))
+
     forest = []
-    for root, rel_records in groups.items():
-        # 构造树的时候，加一个根节点，id可以用root路径生成UUID
-        root_node_id = str(uuid.uuid5(uuid.NAMESPACE_URL, root))
+
+    for top_name, rel_records in top_level_map.items():
+        # 用顶层目录名构造一个稳定的 UUID
+        root_node_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "/" + top_name))
+
+        # 构建子树
         tree = build_dir_tree_with_ids(rel_records)
 
-        # 顶层加个根节点
         forest.append({
             "id": root_node_id,
-            "name": os.path.basename(root),
+            "name": top_name,
             "children": tree
-        })
-
-    # 对others也单独做成一棵树，每个路径直接是叶节点
-    if others:
-        # 构造一棵虚拟根节点，名字 "Others" 或者类似
-        others_root_id = str(uuid.uuid5(uuid.NAMESPACE_URL, "others_root"))
-        others_tree = build_dir_tree_with_ids(others)  # others里面是绝对路径，这里不变相对路径
-
-        forest.append({
-            "id": others_root_id,
-            "name": "Others",
-            "children": others_tree
         })
 
     return forest
@@ -68,23 +47,25 @@ def build_forest_with_root_filter(dir_records, root_paths):
 
 def build_dir_tree_with_ids(dir_records):
     """
-    dir_records: List[Tuple[UUID, str]]  -> [(dir_id, dir_path), ...]
-    dir_path 是相对路径或绝对路径均可
+    dir_records: List[Tuple[UUID, str]]
+        [(dir_id, relative_path), ...]
+    relative_path 可以是 "" 表示直接挂在父节点下
 
     返回: 嵌套树 [{id, name, children}]
     """
-    import os
-    import uuid
-
     tree = {}
 
     for dir_id, path in dir_records:
-        parts = [p for p in path.strip(os.sep).split(os.sep) if p]
+        if not path:
+            # 直接是父节点的叶子
+            continue
+
+        parts = [p for p in path.split("/") if p]
         path_so_far = ""
         node = tree
 
         for i, part in enumerate(parts):
-            path_so_far = os.path.join(path_so_far, part)
+            path_so_far = f"{path_so_far}/{part}" if path_so_far else part
 
             node_id = str(dir_id) if i == len(parts) - 1 else str(uuid.uuid5(uuid.NAMESPACE_URL, path_so_far))
 

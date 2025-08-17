@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .schemas import ImageOut, ImageSize
 from .models import Image, Dataset, ImageCaption, ImagePose, ImageTag
-from .build_forest_from_paths import build_forest_with_root_filter
+from .build_forest_from_paths import build_forest_from_abs_paths
 from .config import settings
 from sqlalchemy.orm import aliased
 from sqlalchemy import func
@@ -203,5 +203,5 @@ async def query_dataset_ids_and_build_tree(db: AsyncSession):
         dataset_records = result.all()  # List[Tuple[UUID, str]]
 
     # dataset_records 元素格式示例: (dataset_id, dir_path)
-    tree = build_forest_with_root_filter(dataset_records, [IMAGE_DIR])
+    tree = build_forest_from_abs_paths(dataset_records)
     return tree
