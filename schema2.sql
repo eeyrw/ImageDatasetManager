@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 CREATE TABLE datasets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),   -- 主键，自动生成UUID
   name TEXT UNIQUE NOT NULL,                        -- 数据集名称，唯一且非空
-  description TEXT,                                  -- 数据集描述，可选
+  description TEXT,                                 -- 数据集描述，可选
   dir_path TEXT UNIQUE NOT NULL,                    -- 物理目录路径，唯一且非空
   license TEXT,                                     -- 许可信息，可选
   origin_url TEXT,                                  -- 数据集来源URL，可选
