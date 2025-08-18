@@ -43,11 +43,24 @@ services:
     restart: always
     environment:
       MEILI_NO_ANALYTICS: "true"      # 关闭匿名统计
-      # MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}   # 设置主密钥（必须自己填）
+    # MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}   # 设置主密钥（必须自己填）
     ports:
       - "7700:7700"
     volumes:
       - meili_data:/meili_data
+
+  meilisearch-ui:
+    image: riccoxie/meilisearch-ui:latest
+    container_name: meilisearch-ui
+    restart: on-failure:5
+    ports:
+      - "24900:24900"   # 这里可以改成你想映射的端口
+    environment:
+      SINGLETON_MODE: "true"
+      SINGLETON_HOST: "http://localhost:7700"  # 替换为你的 Meilisearch 地址，例如 http://meilisearch:7700
+    #SINGLETON_API_KEY: "${MEILI_MASTER_KEY}"  # 如果 Meilisearch 设置了 Master Key
+    depends_on:
+      - meilisearch
 volumes:
   postgres_data:
   meili_data:
