@@ -14,10 +14,12 @@ MEILI_INDEX = "images"
 DATABASE_URL = "postgresql+asyncpg://postgres:example@localhost:5432/image_dataset_db4"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
-async_session = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+async_session = sessionmaker(
+    engine, expire_on_commit=False, class_=AsyncSession)
 
 client = Client(MEILI_URL)
 index = client.index(MEILI_INDEX)
+
 
 async def fetch_images(session):
     stmt = (
@@ -25,11 +27,13 @@ async def fetch_images(session):
         .options(
             selectinload(Image.captions),
             selectinload(Image.tags),
-            selectinload(Image.dataset)
+            selectinload(Image.dataset),
+            selectinload(Image.poses)
         )
     )
     result = await session.execute(stmt)
     return result.scalars().all()
+
 
 async def sync_to_meilisearch():
     from urllib.parse import quote
@@ -45,15 +49,28 @@ async def sync_to_meilisearch():
             # 拼接图片相对路径
             from pathlib import Path
             mid_path = Path(img.file_path)
-            rel_path = Path(dataset_dir) / mid_path if dataset_dir else mid_path
+            rel_path = Path(dataset_dir) / \
+                mid_path if dataset_dir else mid_path
             url = f"{IMGPROXY_URL}/{IMGPROXY_PATH_PREFIX}/{quote(rel_path.as_posix(), safe=':/?=&')}@webp"
             raw_size_image_url = f"{IMGPROXY_URL}/{IMGPROXY_PATH_PREFIX_RAW_SIZE}/{quote(rel_path.as_posix(), safe=':/?=&')}@webp"
+            poses = []
+            if hasattr(img, "poses") and img.poses:
+                for p in img.poses:
+                    poses.append({
+                        "pose_index": p.pose_index,
+                        "bbox": p.bbox,
+                        "invalid_kpts_idx": p.invalid_kpts_idx,
+                        "kpts_x": p.kpts_x,
+                        "kpts_y": p.kpts_y
+                    })
             docs.append({
                 "id": str(img.id),
                 "dataset_id": str(img.dataset_id),
                 "file_path": img.file_path,
                 "dataset_dir": dataset_dir,
-                "captions": [c.caption for c in (img.captions or [])],
+                "captions": [
+                    {"caption": c.caption, "type": c.caption_type} for c in (img.captions or [])
+                ],
                 "tags": img.tags.tags if img.tags else [],
                 "width": img.width,
                 "height": img.height,
@@ -61,6 +78,7 @@ async def sync_to_meilisearch():
                 "aesthetic_score": img.aesthetic_score,
                 "url": url,
                 "raw_size_image_url": raw_size_image_url,
+                "poses": poses,
             })
         print(f"Syncing {len(docs)} images to Meilisearch...")
         index.add_documents_in_batches(docs)

@@ -48,15 +48,15 @@ export default function App() {
       </Splitter.Panel>
       <Splitter.Panel style={{ padding: 0, minHeight: 0, height: '100vh', overflow: 'auto' }}>
         <ImageGrid
-          header={<Collapse size="small" ghost={true}>
-            <Collapse.Panel header="条件查询" key="1">
-              <div style={{ padding: 24 }}>
-                <DynamicQueryForm onSearch={handleSearch} />
-                <h3>查询参数（打印）</h3>
-                <pre>{queryParams ? JSON.stringify(queryParams, null, 2) : "尚未查询"}</pre>
-              </div>
-            </Collapse.Panel>
-          </Collapse>}
+          // header={<Collapse size="small" ghost={true}>
+          //   <Collapse.Panel header="条件查询" key="1">
+          //     <div style={{ padding: 24 }}>
+          //       <DynamicQueryForm onSearch={handleSearch} />
+          //       <h3>查询参数（打印）</h3>
+          //       <pre>{queryParams ? JSON.stringify(queryParams, null, 2) : "尚未查询"}</pre>
+          //     </div>
+          //   </Collapse.Panel>
+          // </Collapse>}
           collection={collection}
           selectedIds={selectedIds}
           onClickImage={setClickedImage} />

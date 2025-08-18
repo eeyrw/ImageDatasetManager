@@ -1,10 +1,14 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
-import { Button, Modal, Space, Switch } from 'antd';
+import { Button, Input, Modal, Space, Switch } from 'antd';
 import AddToFavouriteButton from './AddToFavouriteButton';
+import { MeiliSearch } from 'meilisearch';
+import { InstantSearch, SearchBox, Hits, Highlight } from 'react-instantsearch';
+import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const searchClient = new MeiliSearch({ host: 'http://localhost:7700' });
 
 type Props = {
   collection: 'dataset' | 'favourite' | null;
@@ -21,6 +25,7 @@ export default function ImageGrid({
   header,
   selectable = true,
 }: Props) {
+  const [query, setQuery] = useState('');   // 新增搜索关键字
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(100);
   const [totalPages, setTotalPages] = useState(1);
@@ -30,6 +35,7 @@ export default function ImageGrid({
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
   const [highlightEnabled, setHighlightEnabled] = useState(false);
   const [showOnlySelected, setShowOnlySelected] = useState(false);  // 新增只看已选开关
+
 
 
   useEffect(() => {
@@ -43,14 +49,22 @@ export default function ImageGrid({
     const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${baseUrl}/api/images`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ collection, ids: externalSelectedIds, page, pageSize }),
+        // 构造 filter: dataset_id IN [xxx]
+        const filter = externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ');
+
+        const res = await searchClient.index('images').search(query, {
+          filter,
+          limit: pageSize,
+          offset: page * pageSize
         });
-        const data = await res.json();
-        setImages(data.images || []);
-        const total = data.total || 0;
+
+        const formatted = res.hits.map(hit => ({
+          ...hit,
+          title: hit.captions[0] && hit.captions[0].caption,
+          size: { w: hit.width, h: hit.height }
+        }));
+        setImages(formatted as ImageInfo[]);
+        const total = res.estimatedTotalHits || 0;
         setTotalItems(total);
         setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
       } catch (e) {
@@ -64,7 +78,7 @@ export default function ImageGrid({
     };
 
     fetchData();
-  }, [collection, externalSelectedIds, page, pageSize]);
+  }, [collection, externalSelectedIds, query, page, pageSize]);
 
   useEffect(() => {
     setPage(0);
@@ -111,7 +125,17 @@ export default function ImageGrid({
   return (
     <div className="main-grid-panel">
       {header && <div className="image-grid-header">{header}</div>}
-
+      {/* 搜索面板 */}
+      <div style={{ padding: 12 }}>
+        <Input.Search
+          placeholder="搜索图片标题或描述"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onSearch={val => setQuery(val)}
+          enterButton
+          allowClear
+        />
+      </div>
       <div className="image-scroll-container" style={{ position: 'relative' }}>
         {loading && <div className="loading-overlay">加载中...</div>}
         <div
