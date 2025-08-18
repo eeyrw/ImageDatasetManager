@@ -5,3 +5,4 @@ sqlalchemy
 pydantic-settings
 tqdm
 asyncpg
+meilisearch[async]
