@@ -5,6 +5,7 @@ import ImageDetails, { FieldConfig } from './components/ImageDetails';
 import { ImageInfo } from './components/ImageGallery';
 import DynamicQueryForm from "./components/DynamicQueryForm";
 import { Card, Collapse, Splitter } from 'antd';
+import ImageAnalysisChart from './components/ImageAnalysisChart';
 
 export default function App() {
   const [collection, setCollection] = useState<'dataset' | 'favourite' | null>(null);
@@ -47,6 +48,7 @@ export default function App() {
         </Card>
       </Splitter.Panel>
       <Splitter.Panel style={{ padding: 0, minHeight: 0, height: '100vh', overflow: 'auto' }}>
+        <ImageAnalysisChart />
         <ImageGrid
           // header={<Collapse size="small" ghost={true}>
           //   <Collapse.Panel header="条件查询" key="1">
