@@ -48,7 +48,7 @@ export default function App() {
         </Card>
       </Splitter.Panel>
       <Splitter.Panel style={{ padding: 0, minHeight: 0, height: '100vh', overflow: 'auto' }}>
-        <ImageAnalysisChart />
+        {/* <ImageAnalysisChart /> */}
         <ImageGrid
           // header={<Collapse size="small" ghost={true}>
           //   <Collapse.Panel header="条件查询" key="1">
