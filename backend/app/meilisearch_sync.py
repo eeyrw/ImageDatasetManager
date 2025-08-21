@@ -63,19 +63,25 @@ async def sync_to_meilisearch():
                         "kpts_x": p.kpts_x,
                         "kpts_y": p.kpts_y
                     })
+
+            captionDict = {}
+            
+            for c in (img.captions or []):
+                captionDict.setdefault(c.caption_type, []).append(c.caption)
+
             docs.append({
                 "id": str(img.id),
                 "dataset_id": str(img.dataset_id),
                 "file_path": img.file_path,
                 "dataset_dir": dataset_dir,
-                "captions": [
-                    {"caption": c.caption, "type": c.caption_type} for c in (img.captions or [])
-                ],
+                "captions": captionDict,
                 "tags": img.tags.tags if img.tags else [],
                 "width": img.width,
                 "height": img.height,
                 "quality_score": img.quality_score,
                 "aesthetic_score": img.aesthetic_score,
+                "aesthetic_eat": img.aesthetic_eat,
+                "watermark_prob": img.watermark_prob,
                 "url": url,
                 "raw_size_image_url": raw_size_image_url,
                 "poses": poses,
