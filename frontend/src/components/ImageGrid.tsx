@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
-import { Button, Input, Modal, Space, Switch } from 'antd';
+import { Button, Input, Modal, Select, Space, Switch } from 'antd';
 import AddToFavouriteButton from './AddToFavouriteButton';
 import { MeiliSearch } from 'meilisearch';
 import { InstantSearch, SearchBox, Hits, Highlight } from 'react-instantsearch';
@@ -36,7 +36,23 @@ export default function ImageGrid({
   const [highlightEnabled, setHighlightEnabled] = useState(false);
   const [showOnlySelected, setShowOnlySelected] = useState(false);  // 新增只看已选开关
 
+  const [attributes, setAttributes] = useState<string[]>([]);
+  const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
 
+  useEffect(() => {
+    const fetchAttrs = async () => {
+      try {
+        const settings = await searchClient.index('images').getSettings();
+        setAttributes(settings.searchableAttributes || []);
+        if (settings.searchableAttributes?.length) {
+          setSelectedAttrs(settings.searchableAttributes);
+        }
+      } catch (e) {
+        console.error("无法获取 Meilisearch searchableAttributes", e);
+      }
+    };
+    fetchAttrs();
+  }, []);
 
   useEffect(() => {
     if (!collection || externalSelectedIds.length === 0) {
@@ -55,7 +71,8 @@ export default function ImageGrid({
         const res = await searchClient.index('images').search(query, {
           filter,
           limit: pageSize,
-          offset: page * pageSize
+          offset: page * pageSize,
+          attributesToSearchOn: selectedAttrs,
         });
 
         const formatted = res.hits.map(hit => ({
@@ -79,7 +96,7 @@ export default function ImageGrid({
     };
 
     fetchData();
-  }, [collection, externalSelectedIds, query, page, pageSize]);
+  }, [collection, externalSelectedIds, selectedAttrs, query, page, pageSize]);
 
   useEffect(() => {
     setPage(0);
@@ -127,7 +144,15 @@ export default function ImageGrid({
     <div className="main-grid-panel">
       {header && <div className="image-grid-header">{header}</div>}
       {/* 搜索面板 */}
-      <div style={{ padding: 12 }}>
+      <div style={{ display: 'flex', gap: 8, padding: 12 }}>
+        <Select
+          mode="multiple"
+          style={{ minWidth: 200 }}
+          value={selectedAttrs}
+          onChange={setSelectedAttrs}
+          options={attributes.map(attr => ({ value: attr, label: attr }))}
+          placeholder="选择搜索字段"
+        />
         <Input.Search
           placeholder="搜索图片标题或描述"
           value={query}
