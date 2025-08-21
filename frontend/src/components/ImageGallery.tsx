@@ -8,8 +8,9 @@ export type ImageInfo = {
   id: string;
   url: string;
   raw_size_image_url: string;
-  title: string;
+  caption: string;
   size: { w: number; h: number };
+  path: string;
   poses:[];
 };
 
@@ -64,7 +65,7 @@ export default function ImageGallery({
               thumbnail={img.url}
               width={img.size.w}
               height={img.size.h}
-              caption={img.title}
+              caption={img.caption}
             >
               {({ ref, open }) => (
                 <ImageItem

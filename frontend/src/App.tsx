@@ -32,7 +32,7 @@ export default function App() {
   // 可根据需要自定义 fields 配置
   const fields: FieldConfig[] = [
     { key: 'url', type: 'image', label: '图片' },
-    { key: 'title', type: 'text', label: '描述' },
+    { key: 'caption', type: 'text', label: '描述' },
     { key: 'size', type: 'size', label: '尺寸' },
     { key: 'tags', type: 'tags', label: '标签' },
     { key: 'score_quality', type: 'number', label: '画质评分' },
