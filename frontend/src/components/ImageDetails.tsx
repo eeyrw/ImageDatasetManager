@@ -30,12 +30,12 @@ export default function ImageDetails({ data, fields }: { data: any | null, field
         </div>
       )}
 
-          <ZoomablePoseOverlay
+          {/* <ZoomablePoseOverlay
             image={data}
             thumbnailWidth={300}  // 缩略图宽度
             showBBox={true}
             showFaceEdges={true}
-          />
+          /> */}
 
       <Descriptions
         column={1}

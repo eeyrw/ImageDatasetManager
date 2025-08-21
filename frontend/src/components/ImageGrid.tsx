@@ -60,7 +60,7 @@ export default function ImageGrid({
 
         const formatted = res.hits.map(hit => ({
           ...hit,
-          title: hit.captions[0] && hit.captions[0].caption,
+          title: hit.captions['hq'] && hit.captions['hq'][0],
           size: { w: hit.width, h: hit.height }
         }));
         setImages(formatted as ImageInfo[]);
