@@ -65,7 +65,6 @@ export default function ImageGallery({
               thumbnail={img.url}
               width={img.size.w}
               height={img.size.h}
-              caption={img.caption}
             >
               {({ ref, open }) => (
                 <ImageItem

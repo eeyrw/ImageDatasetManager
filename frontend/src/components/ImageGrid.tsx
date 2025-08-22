@@ -77,7 +77,8 @@ export default function ImageGrid({
 
         const formatted = res.hits.map(hit => ({
           ...hit,
-          caption: hit.captions['hq'] && hit.captions['hq'][0],
+          caption_hq: hit.captions['hq'],
+          caption_generic: hit.captions['generic'],
           path: hit.dataset_dir+'/'+hit.file_path,
           size: { w: hit.width, h: hit.height }
         }));

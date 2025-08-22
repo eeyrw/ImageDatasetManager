@@ -15,6 +15,7 @@
     "chart.js": "^4.5.0",
     "dayjs": "^1.11.13",
     "imagesloaded": "^5.0.0",
+    "lodash": "^4.17.21",
     "macy": "^2.5.1",
     "meilisearch": "^0.52.0",
     "photoswipe": "^5.4.4",
