@@ -43,7 +43,7 @@ def analyze_json(
                     "sql_expr": "width::float / height",
                     "min_val": 0,
                     "max_val": 3,
-                    "num_buckets": 50,
+                    "num_buckets": 20,
                     "where_clause": "width IS NOT NULL AND height IS NOT NULL AND height<>0"
                 })
             elif f == "size":
@@ -52,33 +52,34 @@ def analyze_json(
                     "sql_expr": "sqrt(width::float * height)",
                     "min_val": 0,
                     "max_val": 3000,
-                    "num_buckets": 50,
+                    "num_buckets": 20,
                     "where_clause": "width IS NOT NULL AND height IS NOT NULL"
                 })
-            elif f == "quality":
+            elif f == "quality_score":
                 analysis_params.append({
                     "name": "图片质量分布",
                     "sql_expr": "quality_score",
                     "min_val": 0,
                     "max_val": 100,
-                    "num_buckets": 50,
+                    "num_buckets": 20,
                     "where_clause": "quality_score IS NOT NULL"
                 })
-            elif f == "aes":
+            elif f == "aesthetic_score":
                 analysis_params.append({
                     "name": "图片美学分布",
                     "sql_expr": "aesthetic_score",
                     "min_val": 0,
                     "max_val": 10,
-                    "num_buckets": 50,
+                    "num_buckets": 20,
                     "where_clause": "aesthetic_score IS NOT NULL"
                 })
+            elif f == "aesthetic_eat":
                 analysis_params.append({
                     "name": "图片美学2分布",
                     "sql_expr": "aesthetic_eat",
                     "min_val": 0,
                     "max_val": 10,
-                    "num_buckets": 50,
+                    "num_buckets": 20,
                     "where_clause": "aesthetic_eat IS NOT NULL"
                 })
             else:

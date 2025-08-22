@@ -13,7 +13,7 @@ export default function App() {
   const [clickedImage, setClickedImage] = useState<ImageInfo | null>(null);
   // 保存查询参数
   const [queryParams, setQueryParams] = useState(null);
-  const [saving, setSaving] = useState(false); // 保存 loading 状态
+  
 
   const handleSelect = (type: 'dataset' | 'favourite', ids: string[]) => {
     setCollection(ids.length > 0 ? type : null);
@@ -29,30 +29,31 @@ export default function App() {
     //   .then(...)
   };
 
-  const handleSave = async (changes: Record<string, any>) => {
+  const handleSave = async (imgId: string, changes: Record<string, any>) => {
     if (!clickedImage) return;
     if (Object.keys(changes).length === 0) {
       message.info('没有修改内容');
       return;
     }
 
-    const backup = { ...clickedImage }; // 保存快照，失败回退
-    const updatedImage = { ...clickedImage, ...changes };
-    setClickedImage(updatedImage);
-    setSaving(true);
+    // 假设 updateImageAPI 返回 Promise
+    // await updateImageAPI(clickedImage.id, changes);
+    console.log('提交更新:', imgId,changes);
+    // 模拟失败： 
+    
+    await new Promise<void>((resolve, reject) => {
+          setTimeout(() => {
+            const fail = Math.random() < 0.5; // 50% 失败概率
+            if (fail) reject(new Error('模拟保存失败'));
+            else resolve();
+          }, 1500); // 延迟 1.5 秒
+        });
 
-    try {
-      // 假设 updateImageAPI 返回 Promise
-      //await updateImageAPI(clickedImage.id, changes);
-      message.success('保存成功');
-    } catch (err) {
-      console.error(err);
-      setClickedImage(backup); // 回退到保存前数据
-      message.error('保存失败，请重试');
-    } finally {
-      setSaving(false);
-    }
+    // 保存成功再更新 clickedImage
+    setClickedImage((prev) => ({ ...prev!, ...changes }));
+
   };
+
   // 可根据需要自定义 fields 配置
   const fields: FieldConfig[] = [
     { key: 'url', type: 'image', label: '图片' },
@@ -60,8 +61,9 @@ export default function App() {
     { key: 'caption_generic', type: 'texts', label: '描述-GENERIC', editable: true },
     { key: 'size', type: 'size', label: '尺寸' },
     { key: 'tags', type: 'tags', label: '标签', editable: true },
-    { key: 'quality_score', type: 'number', label: '画质评分' },
-    { key: 'aesthetic_eat', type: 'number', label: '美学评分' },
+    { key: 'quality_score', type: 'hist', label: '画质评分' },
+    { key: 'aesthetic_eat', type: 'hist', label: '美学评分' },
+    { key: 'watermark_prob', type: 'prob', label: '含水印概率' },
     { key: 'path', type: 'text', label: '路径' },
   ];
   return (
@@ -90,12 +92,11 @@ export default function App() {
       </Splitter.Panel>
       <Splitter.Panel collapsible defaultSize="15%" min="10%" max="70%">
         <Card title="图片详情" bordered={false} bodyStyle={{ padding: 16 }} style={{ height: '100%', borderRadius: 0, boxShadow: 'none' }}>
-            <ImageDetails
-              data={clickedImage}
-              fields={fields}
-              onSave={handleSave}
-              saving={saving} // 传递 loading 状态
-            />
+          <ImageDetails
+            data={clickedImage}
+            fields={fields}
+            onSave={handleSave}
+          />
         </Card>
       </Splitter.Panel>
     </Splitter>

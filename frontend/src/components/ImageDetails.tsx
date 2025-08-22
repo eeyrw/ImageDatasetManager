@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Tag, Descriptions, Flex, Select, Input, Button, Space, Divider } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Tag, Descriptions, Flex, Select, Input, Button, Space, message, Progress } from 'antd';
 import isEqual from 'lodash/isEqual';
+import NumberWithDistribution from './NumberWithDistribution'
 
 export type FieldConfig = {
   key: string;
-  type: 'image' | 'text' | 'number' | 'tags' | 'texts' | 'size';
+  type: 'image' | 'text' | 'number' | 'hist' | 'prob' | 'tags' | 'texts' | 'size';
   label: string;
   editable?: boolean;
   render?: (value: any, data: any) => React.ReactNode;
@@ -13,31 +14,40 @@ export type FieldConfig = {
 export default function ImageDetails({
   data,
   fields,
-  onSave,
-  saving = false,
+  onSave
 }: {
   data: any | null;
   fields: FieldConfig[];
-  onSave?: (values: Record<string, any>) => void;
-  saving?: boolean;
+  onSave?: (imgId: string, values: Record<string, any>) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, any>>({});
-  const [initialValues, setInitialValues] = useState<Record<string, any>>({});
+  const [saving, setSaving] = useState(false); // 保存 loading 状态
+  const [internalData, setInternalData] = useState(data);
 
-  if (!data) return <div className="side-panel">点击图片查看详情</div>;
+  // 只在 data 更新且不在编辑状态下同步
+  useEffect(() => {
+    if (!isEditing) {
+      setInternalData(data);
+    }
+  }, [data, isEditing]);
+
+
+  if (!internalData) return <div className="side-panel">点击图片查看详情</div>;
 
   const imageField = fields.find((f) => f.type === 'image');
-  const imageValue = imageField ? data[imageField.key] : null;
+  const imageValue = imageField ? internalData?.[imageField.key] : null;
+
+
+
 
   const startEditing = () => {
     if (saving) return;
     const initValues: Record<string, any> = {};
     fields.forEach((f) => {
-      if (f.editable) initValues[f.key] = data[f.key];
+      if (f.editable) initValues[f.key] = internalData[f.key];
     });
     setEditValues(initValues);
-    setInitialValues(initValues);
     setIsEditing(true);
   };
 
@@ -45,20 +55,37 @@ export default function ImageDetails({
     if (saving) return;
     setIsEditing(false);
     setEditValues({});
-    setInitialValues({});
   };
 
-  const saveEditing = () => {
+  const saveEditing = async () => {
     if (saving) return;
+    // 以 internalData 为基准比较，而不是 initialValues
     const changedValues: Record<string, any> = {};
     Object.keys(editValues).forEach((key) => {
-      if (!isEqual(editValues[key], initialValues[key])) {
+      if (!isEqual(editValues[key], internalData[key])) {
         changedValues[key] = editValues[key];
       }
     });
-    onSave?.(changedValues);
-    setIsEditing(false);
+
+    if (Object.keys(changedValues).length === 0) {
+      message.info('没有修改内容');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await onSave?.(internalData.id, changedValues); // 父组件返回 Promise
+      message.success('保存成功');
+      // ✅ 成功提交后退出编辑模式
+      setIsEditing(false);
+    } catch (err) {
+      message.error('保存失败，请重试');
+      // ❌ 不退出编辑模式，保持可继续编辑
+    } finally {
+      setSaving(false);
+    }
   };
+
 
   return (
     <div>
@@ -90,7 +117,7 @@ export default function ImageDetails({
         {fields
           .filter((field) => field.type !== 'image')
           .map((field) => {
-            const value = data[field.key];
+            const value = internalData[field.key];
             let content: React.ReactNode = null;
 
             if (isEditing && field.editable) {
@@ -162,9 +189,31 @@ export default function ImageDetails({
               }
             } else {
               if (field.render) {
-                content = field.render(value, data);
+                content = field.render(value, internalData);
               } else {
                 switch (field.type) {
+
+                  case 'number':
+                    content =
+                      typeof value === 'number'
+                        ? Number.isInteger(value)
+                          ? value           // 整数原样显示
+                          : Number(value).toPrecision(3) // 小数显示3位有效数字
+                        : value;
+                    break;
+                  case 'hist':
+                    content =
+                      <Flex wrap="wrap" gap="small">
+                        <NumberWithDistribution
+                          apiUrl={`http://localhost:8000/analyze_json?fields=${field.key}`}
+                          value={value.toPrecision(3)}
+                          height={180} />
+                      </Flex>;
+
+                    break;
+                  case 'prob':
+                    content = <Progress percent={(value * 100).toFixed(0)} size="small" />;
+                    break;
                   case 'tags':
                     content = Array.isArray(value) ? (
                       <Flex wrap="wrap" gap="small">
