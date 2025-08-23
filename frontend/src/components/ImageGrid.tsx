@@ -1,12 +1,12 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
-import { Button, Input, Modal, Select, Space, Switch } from 'antd';
+import { Button, Flex, Input, Modal, Select, Space, Switch } from 'antd';
 import AddToFavouriteButton from './AddToFavouriteButton';
 import { MeiliSearch } from 'meilisearch';
 import { InstantSearch, SearchBox, Hits, Highlight } from 'react-instantsearch';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
-import RangeSlider, { RangeMode, ValueType } from "./RangeSlider"; // 假设你把代码放在 RangeSlider.tsx
+import RangeSlider, { RangeSliderStatus, SliderMode } from "./RangeSlider";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const searchClient = new MeiliSearch({ host: 'http://localhost:7700' });
@@ -40,8 +40,23 @@ export default function ImageGrid({
   const [attributes, setAttributes] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
 
-  const [rangeInt, setRangeInt] = useState<[number, number]>([10, 50]);
-  const [rangeFloat, setRangeFloat] = useState<[number, number]>([0.2, 0.8]);
+  const [status, setStatus] = useState<RangeSliderStatus>({
+    value: [10, 50],
+    sliderMode: "range",
+    rangeMode: "float",
+    min: 0,
+    max: 100,
+    enabled: true,
+  });
+
+  const [status2, setStatus2] = useState<RangeSliderStatus>({
+    value: [10, 50],
+    sliderMode: "range",
+    rangeMode: "float",
+    min: 0,
+    max: 100,
+    enabled: true,
+  });
 
   useEffect(() => {
     const fetchAttrs = async () => {
@@ -149,15 +164,7 @@ export default function ImageGrid({
     <div className="main-grid-panel">
       {header && <div className="image-grid-header">{header}</div>}
 
-      <div style={{ padding: 32 }}>
-      <RangeSlider
-        value={rangeFloat}
-        onChange={setRangeFloat}
-        defaultMin={0}
-        defaultMax={200}
-        mode="float"
-      />
-      </div>
+
 
       {/* 搜索面板 */}
       <div style={{ display: 'flex', gap: 8, padding: 12 }}>
@@ -178,6 +185,19 @@ export default function ImageGrid({
           allowClear
         />
       </div>
+      <div style={{ display: 'flex', gap: 8, padding: 12 }}>
+        <RangeSlider
+          status={status}
+          onChange={(s) => setStatus(s)}
+          description="quality_score"
+        />
+        <RangeSlider
+          status={status2}
+          onChange={(s) => setStatus2(s)}
+          description="aesthetic_eat"
+        />
+      </div>
+
       <div className="image-scroll-container" style={{ position: 'relative' }}>
         {loading && <div className="loading-overlay">加载中...</div>}
         <div
