@@ -203,13 +203,12 @@ export default function ImageDetails({
                     break;
                   case 'hist':
                     content =
-                      <Flex wrap="wrap" gap="small">
+                      <div style={{ width: "100%" }}>
                         <NumberWithDistribution
                           apiUrl={`http://localhost:8000/analyze_json?fields=${field.key}`}
                           value={value.toPrecision(3)}
                           height={180} />
-                      </Flex>;
-
+                      </div>
                     break;
                   case 'prob':
                     content = <Progress percent={(value * 100).toFixed(0)} size="small" />;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Slider, Radio, Popover, Button, Typography, Space, Switch, Card, InputNumber } from "antd";
-import { EllipsisOutlined } from "@ant-design/icons";
+import { EllipsisOutlined,MoreOutlined } from "@ant-design/icons";
 
 export type SliderMode = "range" | "gte" | "lte";
 export type RangeMode = "int" | "float";
@@ -248,7 +248,7 @@ const RangeSlider: React.FC<RangeSliderProps> = ({ status, onChange, step, descr
         />
 
         <Popover content={popoverContent} trigger="click" placement="bottomRight">
-          <Button size="small" type="text" icon={<EllipsisOutlined />} style={{ padding: "0 6px" }} disabled={!sliderState.enabled} />
+          <Button size="small" type="text" icon={<MoreOutlined />} style={{ padding: "0 6px" }} disabled={!sliderState.enabled} />
         </Popover>
       </div>
     </Card>
