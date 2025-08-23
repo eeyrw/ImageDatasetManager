@@ -90,9 +90,9 @@ const RangeSlider: React.FC<RangeSliderProps> = ({ status, onChange, step, descr
 
   const renderDisplayValue = () => {
     const [minVal, maxVal] = sliderState.value;
-    if (sliderState.sliderMode === "range") return `[${minVal}, ${maxVal}]`;
-    if (sliderState.sliderMode === "gte") return `≥ ${minVal}`;
-    return `≤ ${maxVal}`;
+    if (sliderState.sliderMode === "range") return `:[${minVal}, ${maxVal}]`;
+    if (sliderState.sliderMode === "gte") return ` ≥ ${minVal}`;
+    return ` ≤ ${maxVal}`;
   };
 
   const popoverContent = (
@@ -219,7 +219,7 @@ const RangeSlider: React.FC<RangeSliderProps> = ({ status, onChange, step, descr
   return (
     <Card size="small" style={{ width: 320, opacity: sliderState.enabled ? 1 : 0.5 }} bodyStyle={{ padding: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <Typography.Text>{description}: {renderDisplayValue()}</Typography.Text>
+        <Typography.Text>{description}{renderDisplayValue()}</Typography.Text>
         <Switch size="small" checked={sliderState.enabled} onChange={handleToggle} />
       </div>
 
@@ -246,7 +246,7 @@ const RangeSlider: React.FC<RangeSliderProps> = ({ status, onChange, step, descr
           disabled={!sliderState.enabled}
           style={{ flex: 1 }}
         />
-        
+
         <Popover content={popoverContent} trigger="click" placement="bottomRight">
           <Button size="small" type="text" icon={<EllipsisOutlined />} style={{ padding: "0 6px" }} disabled={!sliderState.enabled} />
         </Popover>
