@@ -101,7 +101,7 @@ export default function ImageGrid({
       setLoading(true);
       try {
         // 构造 filter: dataset_id IN [xxx]
-        const filter = '(' + externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ') + ') AND (' + meiliFilter + ')';
+        const filter = '(' + externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ') + ') '+(meiliFilter?'AND (' + meiliFilter + ')':'');
 
         const res = await searchClient.index('images').search(query, {
           filter,
