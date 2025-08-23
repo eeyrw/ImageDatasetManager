@@ -6,6 +6,7 @@ import AddToFavouriteButton from './AddToFavouriteButton';
 import { MeiliSearch } from 'meilisearch';
 import { InstantSearch, SearchBox, Hits, Highlight } from 'react-instantsearch';
 import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
+import RangeSlider, { RangeMode, ValueType } from "./RangeSlider"; // 假设你把代码放在 RangeSlider.tsx
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const searchClient = new MeiliSearch({ host: 'http://localhost:7700' });
@@ -38,6 +39,9 @@ export default function ImageGrid({
 
   const [attributes, setAttributes] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
+
+  const [rangeInt, setRangeInt] = useState<[number, number]>([10, 50]);
+  const [rangeFloat, setRangeFloat] = useState<[number, number]>([0.2, 0.8]);
 
   useEffect(() => {
     const fetchAttrs = async () => {
@@ -79,7 +83,7 @@ export default function ImageGrid({
           ...hit,
           caption_hq: hit.captions['hq'],
           caption_generic: hit.captions['generic'],
-          path: hit.dataset_dir+'/'+hit.file_path,
+          path: hit.dataset_dir + '/' + hit.file_path,
           size: { w: hit.width, h: hit.height }
         }));
         setImages(formatted as ImageInfo[]);
@@ -144,6 +148,17 @@ export default function ImageGrid({
   return (
     <div className="main-grid-panel">
       {header && <div className="image-grid-header">{header}</div>}
+
+      <div style={{ padding: 32 }}>
+      <RangeSlider
+        value={rangeFloat}
+        onChange={setRangeFloat}
+        defaultMin={0}
+        defaultMax={200}
+        mode="float"
+      />
+      </div>
+
       {/* 搜索面板 */}
       <div style={{ display: 'flex', gap: 8, padding: 12 }}>
         <Select
