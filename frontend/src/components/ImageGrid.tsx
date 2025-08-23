@@ -2,11 +2,9 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
 import { Button, Flex, Input, Modal, Select, Space, Switch } from 'antd';
-import AddToFavouriteButton from './AddToFavouriteButton';
 import { MeiliSearch } from 'meilisearch';
-import { InstantSearch, SearchBox, Hits, Highlight } from 'react-instantsearch';
-import { instantMeiliSearch } from '@meilisearch/instant-meilisearch';
 import RangeSlider, { RangeSliderStatus, SliderMode } from "./RangeSlider";
+import { buildMeiliFilters } from './Utils';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const searchClient = new MeiliSearch({ host: 'http://localhost:7700' });
@@ -40,23 +38,41 @@ export default function ImageGrid({
   const [attributes, setAttributes] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
 
-  const [status, setStatus] = useState<RangeSliderStatus>({
-    value: [10, 50],
-    sliderMode: "range",
-    rangeMode: "float",
-    min: 0,
-    max: 100,
-    enabled: true,
+  // 每个字段对应一个 RangeSliderStatus
+  const [sliders, setSliders] = useState<Record<string, RangeSliderStatus>>({
+    aesthetic_eat: {
+      sliderMode: "gte",
+      value: [3, 5],
+      rangeMode: "float",
+      min: 0,
+      max: 10,
+      enabled: false,
+    },
+    quality_score: {
+      sliderMode: "gte",
+      value: [50, 70],
+      rangeMode: "float",
+      min: 0,
+      max: 100,
+      enabled: false,
+    },
+    watermark_prob: {
+      sliderMode: "lte",
+      value: [0, 1],
+      rangeMode: "float",
+      min: 0,
+      max: 1,
+      enabled: false,
+    },
   });
 
-  const [status2, setStatus2] = useState<RangeSliderStatus>({
-    value: [10, 50],
-    sliderMode: "range",
-    rangeMode: "float",
-    min: 0,
-    max: 100,
-    enabled: true,
-  });
+  // 当某个 RangeSlider 改变时更新状态
+  const handleSliderChange = (field: string, status: RangeSliderStatus) => {
+    setSliders((prev) => ({ ...prev, [field]: status }));
+  };
+
+  // 生成 MeiliSearch filter
+  const meiliFilter = buildMeiliFilters(sliders);
 
   useEffect(() => {
     const fetchAttrs = async () => {
@@ -85,7 +101,7 @@ export default function ImageGrid({
       setLoading(true);
       try {
         // 构造 filter: dataset_id IN [xxx]
-        const filter = externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ');
+        const filter = '(' + externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ') + ') AND (' + meiliFilter + ')';
 
         const res = await searchClient.index('images').search(query, {
           filter,
@@ -116,7 +132,7 @@ export default function ImageGrid({
     };
 
     fetchData();
-  }, [collection, externalSelectedIds, selectedAttrs, query, page, pageSize]);
+  }, [collection, externalSelectedIds, selectedAttrs, query, meiliFilter, page, pageSize]);
 
   useEffect(() => {
     setPage(0);
@@ -186,16 +202,14 @@ export default function ImageGrid({
         />
       </div>
       <div style={{ display: 'flex', gap: 8, padding: 12 }}>
-        <RangeSlider
-          status={status}
-          onChange={(s) => setStatus(s)}
-          description="quality_score"
-        />
-        <RangeSlider
-          status={status2}
-          onChange={(s) => setStatus2(s)}
-          description="aesthetic_eat"
-        />
+        {Object.entries(sliders).map(([key, status]) => (
+          <RangeSlider
+            key={key}   // 这里放 key
+            description={key}      // 可以替换成更友好的名称
+            status={status}
+            onChange={(s) => handleSliderChange(key, s)}
+          />
+        ))}
       </div>
 
       <div className="image-scroll-container" style={{ position: 'relative' }}>

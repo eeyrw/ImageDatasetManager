@@ -68,25 +68,25 @@ const RangeSlider: React.FC<RangeSliderProps> = ({ status, onChange, step, descr
     onChange?.(newState);
   };
 
-  const handleMinChange = (val: number | null) => {
-    if (val === null) return;
-    const newState = { ...sliderState, min: val, value: [Math.max(val, sliderState.value[0]), sliderState.value[1]] };
-    setSliderState(newState);
-    onChange?.(newState);
-  };
-
-  const handleMaxChange = (val: number | null) => {
-    if (val === null) return;
-    const newState = { ...sliderState, max: val, value: [sliderState.value[0], Math.min(val, sliderState.value[1])] };
-    setSliderState(newState);
-    onChange?.(newState);
-  };
-
   const getSliderValue = (): number | [number, number] => {
     if (sliderState.sliderMode === "range") return sliderState.value;
     if (sliderState.sliderMode === "gte") return sliderState.value[0];
-    return sliderState.value[1];
+    return sliderState.value[1]; // lte 模式返回第二个值
   };
+
+  const handleSliderChangeInternal = (val: number | [number, number]) => {
+    // 只更新对应值
+    let newValue: [number, number];
+    if (sliderState.sliderMode === "range") {
+      newValue = (val as [number, number]).map(formatValue) as [number, number];
+    } else if (sliderState.sliderMode === "gte") {
+      newValue = [formatValue(val as number), sliderState.value[1]];
+    } else { // lte
+      newValue = [sliderState.value[0], formatValue(val as number)];
+    }
+    setSliderState({ ...sliderState, value: newValue });
+  };
+
 
   const renderDisplayValue = () => {
     const [minVal, maxVal] = sliderState.value;
@@ -95,125 +95,125 @@ const RangeSlider: React.FC<RangeSliderProps> = ({ status, onChange, step, descr
     return `≤ ${maxVal}`;
   };
 
-const popoverContent = (
-  <Space direction="vertical" size="small">
-    {/* 设置范围 */}
-    <div>
-      最小值:{" "}
-      <InputNumber
-        size="small"
-        value={sliderState.min}
-        style={{ width: 100 }}
-        onChange={(val) => {
-          if (val === null) return;
-          const newMin = Math.min(val, sliderState.max); // 保证 min <= max
-          let newValue = [...sliderState.value] as [number, number];
-          if (newValue[0] < newMin) newValue[0] = newMin;
-          if (newValue[1] < newMin) newValue[1] = newMin;
-          const newState = { ...sliderState, min: newMin, value: newValue };
-          setSliderState(newState);
-          onChange?.(newState);
-        }}
-        disabled={!sliderState.enabled}
-      />
-    </div>
-    <div>
-      最大值:{" "}
-      <InputNumber
-        size="small"
-        value={sliderState.max}
-        style={{ width: 100 }}
-        onChange={(val) => {
-          if (val === null) return;
-          const newMax = Math.max(val, sliderState.min); // 保证 max >= min
-          let newValue = [...sliderState.value] as [number, number];
-          if (newValue[0] > newMax) newValue[0] = newMax;
-          if (newValue[1] > newMax) newValue[1] = newMax;
-          const newState = { ...sliderState, max: newMax, value: newValue };
-          setSliderState(newState);
-          onChange?.(newState);
-        }}
-        disabled={!sliderState.enabled}
-      />
-    </div>
+  const popoverContent = (
+    <Space direction="vertical" size="small">
+      {/* 设置范围 */}
+      <div>
+        最小值:{" "}
+        <InputNumber
+          size="small"
+          value={sliderState.min}
+          style={{ width: 100 }}
+          onChange={(val) => {
+            if (val === null) return;
+            const newMin = Math.min(val, sliderState.max); // 保证 min <= max
+            let newValue = [...sliderState.value] as [number, number];
+            if (newValue[0] < newMin) newValue[0] = newMin;
+            if (newValue[1] < newMin) newValue[1] = newMin;
+            const newState = { ...sliderState, min: newMin, value: newValue };
+            setSliderState(newState);
+            onChange?.(newState);
+          }}
+          disabled={!sliderState.enabled}
+        />
+      </div>
+      <div>
+        最大值:{" "}
+        <InputNumber
+          size="small"
+          value={sliderState.max}
+          style={{ width: 100 }}
+          onChange={(val) => {
+            if (val === null) return;
+            const newMax = Math.max(val, sliderState.min); // 保证 max >= min
+            let newValue = [...sliderState.value] as [number, number];
+            if (newValue[0] > newMax) newValue[0] = newMax;
+            if (newValue[1] > newMax) newValue[1] = newMax;
+            const newState = { ...sliderState, max: newMax, value: newValue };
+            setSliderState(newState);
+            onChange?.(newState);
+          }}
+          disabled={!sliderState.enabled}
+        />
+      </div>
 
-    {/* 精确输入当前值 */}
-    {sliderState.sliderMode === "range" && (
-      <div>
-        当前值:{" "}
-        <InputNumber
-          size="small"
-          value={sliderState.value[0]}
-          style={{ width: 70 }}
-          min={sliderState.min}
-          max={sliderState.value[1]}
-          onChange={(val) => {
-            if (val === null) return;
-            const newVal: [number, number] = [Math.min(Math.max(val, sliderState.min), sliderState.value[1]), sliderState.value[1]];
-            const newState = { ...sliderState, value: newVal };
-            setSliderState(newState);
-            onChange?.(newState);
-          }}
-          disabled={!sliderState.enabled}
-        />
-        -
-        <InputNumber
-          size="small"
-          value={sliderState.value[1]}
-          style={{ width: 70 }}
-          min={sliderState.value[0]}
-          max={sliderState.max}
-          onChange={(val) => {
-            if (val === null) return;
-            const newVal: [number, number] = [sliderState.value[0], Math.min(Math.max(val, sliderState.value[0]), sliderState.max)];
-            const newState = { ...sliderState, value: newVal };
-            setSliderState(newState);
-            onChange?.(newState);
-          }}
-          disabled={!sliderState.enabled}
-        />
-      </div>
-    )}
-    {sliderState.sliderMode === "gte" && (
-      <div>
-        ≥{" "}
-        <InputNumber
-          size="small"
-          value={sliderState.value[0]}
-          style={{ width: 100 }}
-          min={sliderState.min}
-          max={sliderState.max}
-          onChange={(val) => {
-            if (val === null) return;
-            const newState = { ...sliderState, value: [Math.min(Math.max(val, sliderState.min), sliderState.max), sliderState.value[1]] };
-            setSliderState(newState);
-            onChange?.(newState);
-          }}
-          disabled={!sliderState.enabled}
-        />
-      </div>
-    )}
-    {sliderState.sliderMode === "lte" && (
-      <div>
-        ≤{" "}
-        <InputNumber
-          size="small"
-          value={sliderState.value[1]}
-          style={{ width: 100 }}
-          min={sliderState.min}
-          max={sliderState.max}
-          onChange={(val) => {
-            if (val === null) return;
-            const newState = { ...sliderState, value: [sliderState.value[0], Math.min(Math.max(val, sliderState.min), sliderState.max)] };
-            setSliderState(newState);
-            onChange?.(newState);
-          }}
-          disabled={!sliderState.enabled}
-        />
-      </div>
-    )}
-  </Space>
-);
+      {/* 精确输入当前值 */}
+      {sliderState.sliderMode === "range" && (
+        <div>
+          当前值:{" "}
+          <InputNumber
+            size="small"
+            value={sliderState.value[0]}
+            style={{ width: 70 }}
+            min={sliderState.min}
+            max={sliderState.value[1]}
+            onChange={(val) => {
+              if (val === null) return;
+              const newVal: [number, number] = [Math.min(Math.max(val, sliderState.min), sliderState.value[1]), sliderState.value[1]];
+              const newState = { ...sliderState, value: newVal };
+              setSliderState(newState);
+              onChange?.(newState);
+            }}
+            disabled={!sliderState.enabled}
+          />
+          -
+          <InputNumber
+            size="small"
+            value={sliderState.value[1]}
+            style={{ width: 70 }}
+            min={sliderState.value[0]}
+            max={sliderState.max}
+            onChange={(val) => {
+              if (val === null) return;
+              const newVal: [number, number] = [sliderState.value[0], Math.min(Math.max(val, sliderState.value[0]), sliderState.max)];
+              const newState = { ...sliderState, value: newVal };
+              setSliderState(newState);
+              onChange?.(newState);
+            }}
+            disabled={!sliderState.enabled}
+          />
+        </div>
+      )}
+      {sliderState.sliderMode === "gte" && (
+        <div>
+          ≥{" "}
+          <InputNumber
+            size="small"
+            value={sliderState.value[0]}
+            style={{ width: 100 }}
+            min={sliderState.min}
+            max={sliderState.max}
+            onChange={(val) => {
+              if (val === null) return;
+              const newState = { ...sliderState, value: [Math.min(Math.max(val, sliderState.min), sliderState.max), sliderState.value[1]] };
+              setSliderState(newState);
+              onChange?.(newState);
+            }}
+            disabled={!sliderState.enabled}
+          />
+        </div>
+      )}
+      {sliderState.sliderMode === "lte" && (
+        <div>
+          ≤{" "}
+          <InputNumber
+            size="small"
+            value={sliderState.value[1]}
+            style={{ width: 100 }}
+            min={sliderState.min}
+            max={sliderState.max}
+            onChange={(val) => {
+              if (val === null) return;
+              const newState = { ...sliderState, value: [sliderState.value[0], Math.min(Math.max(val, sliderState.min), sliderState.max)] };
+              setSliderState(newState);
+              onChange?.(newState);
+            }}
+            disabled={!sliderState.enabled}
+          />
+        </div>
+      )}
+    </Space>
+  );
 
 
   return (
@@ -241,11 +241,12 @@ const popoverContent = (
           max={sliderState.max}
           step={step ?? (sliderState.rangeMode === "int" ? 1 : 0.01)}
           value={getSliderValue() as any}
-          onChange={handleSliderChange}
+          onChange={handleSliderChangeInternal} // 内部更新显示
+          onChangeComplete={handleSliderChange}    // 释放后通知父组件
           disabled={!sliderState.enabled}
           style={{ flex: 1 }}
         />
-
+        
         <Popover content={popoverContent} trigger="click" placement="bottomRight">
           <Button size="small" type="text" icon={<EllipsisOutlined />} style={{ padding: "0 6px" }} disabled={!sliderState.enabled} />
         </Popover>
