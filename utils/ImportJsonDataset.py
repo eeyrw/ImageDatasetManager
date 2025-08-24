@@ -31,8 +31,8 @@ def get_or_create_dataset(cur, dataset_root_dir, json_dir):
     dataset_root_dir: 顶层目录，例如 /mnt/.../DiffusionDataset
     json_dir: imageinfo.json 所在目录
     """
-    # dataset_name 取顶层目录名
-    dataset_name = os.path.basename(dataset_root_dir.rstrip("/"))
+    # dataset_name 取 imageinfo.json 所在目录名（最后一级目录）
+    dataset_name = os.path.basename(json_dir.rstrip("/"))
 
     # dir_path 保留从顶层到 JSON 所在目录的相对路径
     rel_dir_path = os.path.relpath(json_dir, os.path.dirname(dataset_root_dir))
