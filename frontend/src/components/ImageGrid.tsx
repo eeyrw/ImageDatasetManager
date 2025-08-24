@@ -1,11 +1,12 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
-import { Button, Flex, Input, Modal, Select, Space, Switch } from 'antd';
+import { Button, Collapse, Flex, Input, Modal, Select, Space, Switch } from 'antd';
 import { MeiliSearch } from 'meilisearch';
 import RangeSlider, { RangeSliderStatus, SliderMode } from "./RangeSlider";
 import { buildMeiliFilters } from './Utils';
 
+const { Panel } = Collapse;
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const searchClient = new MeiliSearch({ host: 'http://localhost:7700' });
 
@@ -101,7 +102,7 @@ export default function ImageGrid({
       setLoading(true);
       try {
         // 构造 filter: dataset_id IN [xxx]
-        const filter = '(' + externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ') + ') '+(meiliFilter?'AND (' + meiliFilter + ')':'');
+        const filter = '(' + externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ') + ') ' + (meiliFilter ? 'AND (' + meiliFilter + ')' : '');
 
         const res = await searchClient.index('images').search(query, {
           filter,
@@ -181,36 +182,39 @@ export default function ImageGrid({
       {header && <div className="image-grid-header">{header}</div>}
 
 
-
-      {/* 搜索面板 */}
-      <div style={{ display: 'flex', gap: 8, padding: 12 }}>
-        <Select
-          mode="multiple"
-          style={{ minWidth: 200 }}
-          value={selectedAttrs}
-          onChange={setSelectedAttrs}
-          options={attributes.map(attr => ({ value: attr, label: attr }))}
-          placeholder="选择搜索字段"
-        />
-        <Input.Search
-          placeholder="搜索图片标题或描述"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          onSearch={val => setQuery(val)}
-          enterButton
-          allowClear
-        />
-      </div>
-      <div style={{ display: 'flex', gap: 8, padding: 12 }}>
-        {Object.entries(sliders).map(([key, status]) => (
-          <RangeSlider
-            key={key}   // 这里放 key
-            description={key}      // 可以替换成更友好的名称
-            status={status}
-            onChange={(s) => handleSliderChange(key, s)}
-          />
-        ))}
-      </div>
+      {/* 搜索面板折叠 */}
+      <Collapse defaultActiveKey={['search']} bordered={false}>
+        <Panel header="搜索与筛选" key="search">
+          <div style={{ display: 'flex', gap: 8, paddingBottom: 12 }}>
+            <Select
+              mode="multiple"
+              style={{ minWidth: 300 }}
+              value={selectedAttrs}
+              onChange={setSelectedAttrs}
+              options={attributes.map(attr => ({ value: attr, label: attr }))}
+              placeholder="选择搜索字段"
+            />
+            <Input.Search
+              placeholder="搜索图片标题或描述"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onSearch={val => setQuery(val)}
+              enterButton
+              allowClear
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {Object.entries(sliders).map(([key, status]) => (
+              <RangeSlider
+                key={key}
+                description={key}
+                status={status}
+                onChange={(s) => handleSliderChange(key, s)}
+              />
+            ))}
+          </div>
+        </Panel>
+      </Collapse>
 
       <div className="image-scroll-container" style={{ position: 'relative' }}>
         {loading && <div className="loading-overlay">加载中...</div>}

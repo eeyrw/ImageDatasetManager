@@ -20,7 +20,7 @@ export default function Navbar({
   totalItems
 }: Props) {
   return (
-    <div id="nav-bar" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+    <div id="nav-bar" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
       <Space wrap align="center">
         <Pagination
           current={page + 1}

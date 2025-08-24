@@ -73,7 +73,15 @@ export default function ImageDetails({
     <div>
       {imageField && imageValue && (
         <div style={{ textAlign: 'center', marginBottom: 16 }}>
-          <img src={imageValue} alt={imageField.label} style={{ width: '100%', borderRadius: 6 }} />
+          <img
+            src={imageValue}
+            alt={imageField.label}
+            style={{
+              maxWidth: '100%',   // 父容器宽度不足时缩小
+              width: 'auto',      // 否则保持原始宽度
+              borderRadius: 6
+            }}
+          />
         </div>
       )}
 
@@ -108,7 +116,7 @@ export default function ImageDetails({
                 case 'texts':
                   const texts: string[] = editValues[field.key] || [];
                   content = (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 ,width:"100%"}}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: "100%" }}>
                       {texts.map((text, idx) => (
                         <div key={idx} style={{ display: 'flex', gap: 8 }}>
                           <Input.TextArea
@@ -242,7 +250,7 @@ export default function ImageDetails({
                   </Space>
                 ) : (
                   <EditOutlined
-                    style={{ cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                     onClick={() => startFieldEditing(field.key)}
                   />
                 )}

@@ -90,7 +90,7 @@ export default function App() {
           selectedIds={selectedIds}
           onClickImage={setClickedImage} />
       </Splitter.Panel>
-      <Splitter.Panel collapsible defaultSize="15%" min="10%" max="70%">
+      <Splitter.Panel collapsible defaultSize="20%" min="10%" max="70%">
         <Card title="图片详情" bordered={false} bodyStyle={{ padding: 16 }} style={{ height: '100%', borderRadius: 0, boxShadow: 'none' }}>
           <ImageDetails
             data={clickedImage}
