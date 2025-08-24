@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+// TreeSelector.tsx
+import React, { useMemo, useState, useEffect } from 'react';
 import { Button, Input, Tree, Space, Card } from 'antd';
 
 export type TreeItem = {
@@ -16,7 +17,14 @@ type Props = {
   allowSearch?: boolean;
 };
 
-export default function TreeSelector({ items, selected, onSelect, search = '', setSearch, allowSearch = true }: Props) {
+export default function TreeSelector({
+  items,
+  selected,
+  onSelect,
+  search = '',
+  setSearch,
+  allowSearch = true,
+}: Props) {
   // 工具函数：TreeItem[] 转换为 antd Tree 的数据结构
   const toAntdTreeData = (nodes: TreeItem[]): any[] =>
     nodes.map(item => ({
@@ -41,10 +49,11 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
     return items.map(filterTree).filter((x): x is TreeItem => x !== null);
   }, [items, search]);
 
-  // 全选/反选/清空
+  // 递归收集所有 id
   const collectAllIds = (nodes: TreeItem[]): string[] =>
     nodes.flatMap(item => [item.id, ...(item.children ? collectAllIds(item.children) : [])]);
 
+  // 全选 / 反选 / 清空
   const handleSelectAll = () => {
     const allIds = collectAllIds(filteredItems);
     onSelect(Array.from(new Set([...selected, ...allIds])));
@@ -59,17 +68,34 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
     onSelect(newSelected);
   };
 
-  // antd Tree 受控
+  // Tree 受控
   const treeData = useMemo(() => toAntdTreeData(filteredItems), [filteredItems]);
-  // 递归收集所有 key 作为 expandedKeys
+
+  // 展开节点
   const getAllKeys = (nodes: TreeItem[]): string[] =>
     nodes.flatMap(item => [item.id, ...(item.children ? getAllKeys(item.children) : [])]);
   const allKeys = useMemo(() => getAllKeys(filteredItems), [filteredItems]);
   const [expandedKeys, setExpandedKeys] = useState<string[]>(allKeys);
-  // 当过滤内容变化时自动展开所有
-  React.useEffect(() => {
+  useEffect(() => {
     setExpandedKeys(allKeys);
   }, [allKeys]);
+
+  // 增量更新 selected，避免影响隐藏节点
+  const handleCheck = (checkedKeys: React.Key[] | { checked: React.Key[]; halfChecked: React.Key[] }) => {
+    let keys: string[] = [];
+    if (Array.isArray(checkedKeys)) {
+      keys = checkedKeys.map(String);
+    } else {
+      keys = checkedKeys.checked.map(String);
+    }
+
+    const visibleIds = collectAllIds(filteredItems);
+    const newSelected = [
+      ...selected.filter(id => !visibleIds.includes(id)), // 保留不可见节点
+      ...keys, // 更新可见节点
+    ];
+    onSelect(newSelected);
+  };
 
   return (
     <Card bordered={false} bodyStyle={{ padding: 12 }} style={{ boxShadow: 'none', background: 'transparent' }}>
@@ -82,6 +108,7 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
           enterButton={false}
         />
       )}
+
       <Space style={{ marginBottom: 8, flexWrap: 'wrap', display: 'flex', gap: 8 }}>
         <Button size="small" onClick={handleSelectAll}>全选</Button>
         <Button size="small" onClick={handleInvertSelection}>反选</Button>
@@ -89,16 +116,17 @@ export default function TreeSelector({ items, selected, onSelect, search = '', s
         <Button size="small" onClick={() => setExpandedKeys(allKeys)}>展开全部</Button>
         <Button size="small" onClick={() => setExpandedKeys([])}>折叠全部</Button>
       </Space>
+
       <Tree
         checkable
         treeData={treeData}
         height={500}
         checkedKeys={selected}
-        onCheck={keys => onSelect(Array.isArray(keys) ? keys.map(String) : [])}
+        onCheck={handleCheck}
         expandedKeys={expandedKeys}
         onExpand={keys => setExpandedKeys(keys as string[])}
-        showLine={true}
-        style={{ background: 'transparent'}}
+        showLine
+        style={{ background: 'transparent' }}
       />
     </Card>
   );
