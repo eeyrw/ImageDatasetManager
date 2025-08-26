@@ -1,15 +1,13 @@
 import uuid
 from sqlalchemy import (
     Column, PrimaryKeyConstraint, String, Integer, BigInteger, Text, Float, TIMESTAMP, UniqueConstraint,
-    ForeignKey, Index, ARRAY
+    ForeignKey, Index, ARRAY, Boolean, CheckConstraint
 )
-from sqlalchemy.dialects.postgresql import UUID, REAL, CHAR, TEXT
+from sqlalchemy.dialects.postgresql import UUID, REAL, CHAR
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
-def default_uuid():
-    return str(uuid.uuid4())
 
 class Dataset(Base):
     __tablename__ = "datasets"
@@ -44,6 +42,11 @@ class Image(Base):
     quality_score = Column(REAL)
     aesthetic_score = Column(REAL)
 
+    # 回收站相关字段
+    is_deleted = Column(Boolean, nullable=False, server_default="false")
+    deleted_at = Column(TIMESTAMP(timezone=True))
+    deleted_by = Column(Text)
+
     __table_args__ = (
         UniqueConstraint("dataset_id", "file_path", name="uq_images_dataset_file_path"),
         Index("idx_images_dataset_id", "dataset_id"),
@@ -58,6 +61,7 @@ class Image(Base):
     captions = relationship("ImageCaption", cascade="all, delete-orphan", back_populates="image")
     tags = relationship("ImageTag", cascade="all, delete-orphan", uselist=False, back_populates="image")
     poses = relationship("ImagePose", cascade="all, delete-orphan", back_populates="image")
+    recycle_logs = relationship("RecycleBinLog", cascade="all, delete-orphan", back_populates="image")
 
 
 class ImageCaption(Base):
@@ -68,9 +72,13 @@ class ImageCaption(Base):
     caption_type = Column(Text, nullable=False, server_default="generic")
 
     __table_args__ = (
-        # 防止重复
         PrimaryKeyConstraint("image_id", "caption", "caption_type", name="pk_image_captions"),
-        Index("idx_image_captions_caption_trgm", "caption", postgresql_using="gin", postgresql_ops={"caption": "gin_trgm_ops"})
+        Index(
+            "idx_image_captions_caption_trgm",
+            "caption",
+            postgresql_using="gin",
+            postgresql_ops={"caption": "gin_trgm_ops"},
+        ),
     )
 
     image = relationship("Image", back_populates="captions")
@@ -104,3 +112,21 @@ class ImagePose(Base):
     )
 
     image = relationship("Image", back_populates="poses")
+
+
+class RecycleBinLog(Base):
+    __tablename__ = "recycle_bin_log"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    image_id = Column(UUID(as_uuid=True), ForeignKey("images.id", ondelete="CASCADE"), nullable=False)
+    action = Column(Text, nullable=False)
+    action_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default="now()")
+    action_by = Column(Text)
+    reason = Column(Text)
+
+    __table_args__ = (
+        CheckConstraint("action IN ('DELETE', 'RESTORE')", name="ck_recycle_action"),
+        Index("idx_recycle_bin_log_image_id", "image_id"),
+    )
+
+    image = relationship("Image", back_populates="recycle_logs")
