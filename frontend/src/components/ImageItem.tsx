@@ -1,20 +1,32 @@
-// ImageItem.tsx
-import React from "react";
-import { Checkbox } from "antd";
+import React, { useState } from "react";
+import { Checkbox, Rate } from "antd";
 
 type Props = {
   src: string;
   checked?: boolean;
   onCheckedChange?: (val: boolean) => void;
   onClick?: () => void;
-  highlighted?: boolean;  // 是否高亮选中
-  selectable?: boolean;   // 是否显示多选框，默认显示
+  highlighted?: boolean;
+  selectable?: boolean;
+  rating?: number | null;        // 当前评分，null 表示未评分
+  onRatingChange?: (val: number) => void;
 };
 
 const ImageItem = React.forwardRef<HTMLDivElement, Props>(
-  ({ src, checked = false, onCheckedChange, onClick, highlighted = true, selectable = true }, ref) => {
+  ({
+    src,
+    checked = false,
+    onCheckedChange,
+    onClick,
+    highlighted = true,
+    selectable = true,
+    rating = null,
+    onRatingChange,
+  }, ref) => {
+    const [hoverValue, setHoverValue] = useState<number | null>(null);
+
     return (
-      <div className={`image-item ${highlighted ? "" : "dimmed"}`} ref={ref}>
+      <div className={`image-item ${highlighted ? "" : "dimmed"}`} ref={ref} style={{ position: 'relative' }}>
         {selectable && (
           <Checkbox
             checked={checked}
@@ -28,8 +40,19 @@ const ImageItem = React.forwardRef<HTMLDivElement, Props>(
           loading="lazy"
           alt=""
           onClick={onClick}
-          style={{ cursor: 'zoom-in' }} // 这里加放大镜指针
+          style={{ cursor: 'zoom-in', display: 'block', width: '100%' }}
         />
+
+        {/* 五颗星评分 */}
+        <div style={{ position: 'absolute', bottom: 8, left: 8 }}>
+          <Rate
+            value={hoverValue ?? rating ?? 0} // hover 时显示 hoverValue，未评分时显示 0
+            onChange={(val) => onRatingChange?.(val)}
+            onHoverChange={(val) => setHoverValue(val)}
+            allowHalf
+            style={{ fontSize: 16 }}
+          />
+        </div>
       </div>
     );
   }
