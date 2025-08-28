@@ -5,19 +5,21 @@
 #include <thread>
 #include <mutex>
 #include <queue>
+#include <sstream>
+#include <iomanip>
 #include <openssl/sha.h>
 #include <postgresql/libpq-fe.h>
-#include <getopt.h>  // 用于解析命令行参数
+#include <getopt.h>
 
 struct ImageRecord {
     std::string id;
     std::string file_path;
     std::string dataset_dir;
-    std::string file_hash;
+    std::string file_hash; // 原生32字节二进制
 };
 
 // ----------------------
-// SHA256 计算
+// SHA256 计算 (BYTEA)
 // ----------------------
 std::string compute_sha256(const std::string &file_path) {
     std::ifstream file(file_path, std::ios::binary);
@@ -35,11 +37,7 @@ std::string compute_sha256(const std::string &file_path) {
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256_Final(hash, &sha256);
 
-    char output[65];
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-        sprintf(output + i * 2, "%02x", hash[i]);
-    output[64] = 0;
-    return std::string(output);
+    return std::string(reinterpret_cast<char*>(hash), SHA256_DIGEST_LENGTH);
 }
 
 // ----------------------
@@ -114,22 +112,30 @@ void worker(std::queue<ImageRecord>& q, std::mutex& q_mtx,
 }
 
 // ----------------------
-// 写 CSV 文件
+// 写 CSV 文件 (HEX)
 // ----------------------
 void write_csv(const std::string& csv_path, const std::vector<ImageRecord>& data) {
     std::ofstream fout(csv_path);
+    if (!fout) {
+        std::cerr << "Failed to open CSV file for writing: " << csv_path << "\n";
+        return;
+    }
+
     for (auto& img : data) {
-        fout << img.id << "," << img.file_hash << "\n";
+        std::ostringstream oss;
+        for (unsigned char c : img.file_hash)
+            oss << std::hex << std::setw(2) << std::setfill('0') << (int)c;
+        fout << img.id << "," << oss.str() << "\n";
     }
     fout.close();
 }
 
 // ----------------------
-// 导入 CSV 并更新 PostgreSQL (使用 COPY FROM STDIN)
+// 导入 CSV 并更新 PostgreSQL (BYTEA)
 // ----------------------
 void import_csv_update(PGconn* conn, const std::string& csv_path) {
-    // 1. 创建临时表
-    PGresult *res = PQexec(conn, "CREATE TEMP TABLE tmp_hashes (id UUID PRIMARY KEY, file_hash CHAR(64));");
+    PGresult *res = PQexec(conn,
+        "CREATE TEMP TABLE tmp_hashes (id UUID PRIMARY KEY, file_hash_hex TEXT);");
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::cerr << "Create temp table failed: " << PQerrorMessage(conn) << "\n";
         PQclear(res);
@@ -137,8 +143,7 @@ void import_csv_update(PGconn* conn, const std::string& csv_path) {
     }
     PQclear(res);
 
-    // 2. 启动 COPY ... FROM STDIN
-    res = PQexec(conn, "COPY tmp_hashes(id, file_hash) FROM STDIN WITH (FORMAT csv);");
+    res = PQexec(conn, "COPY tmp_hashes(id, file_hash_hex) FROM STDIN WITH (FORMAT csv);");
     if (PQresultStatus(res) != PGRES_COPY_IN) {
         std::cerr << "COPY FROM STDIN failed to start: " << PQerrorMessage(conn) << "\n";
         PQclear(res);
@@ -156,7 +161,7 @@ void import_csv_update(PGconn* conn, const std::string& csv_path) {
 
     std::string line;
     while (std::getline(fin, line)) {
-        line.push_back('\n'); // COPY 协议需要行尾换行
+        line.push_back('\n');
         if (PQputCopyData(conn, line.c_str(), static_cast<int>(line.size())) <= 0) {
             std::cerr << "PQputCopyData failed: " << PQerrorMessage(conn) << "\n";
             PQputCopyEnd(conn, "error");
@@ -182,7 +187,7 @@ void import_csv_update(PGconn* conn, const std::string& csv_path) {
     // 6. 更新 images 表
     res = PQexec(conn,
         "UPDATE images i "
-        "SET file_hash = t.file_hash "
+        "SET file_hash = decode(t.file_hash_hex, 'hex') "
         "FROM tmp_hashes t "
         "WHERE i.id = t.id;");
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
@@ -203,10 +208,7 @@ int main(int argc, char* argv[]) {
 
     // 命令行解析
     int opt;
-    const struct option longopts[] = {
-        {"force", no_argument, nullptr, 'f'},
-        {nullptr, 0, nullptr, 0}
-    };
+    const struct option longopts[] = { {"force", no_argument, nullptr, 'f'}, {nullptr, 0, nullptr, 0} };
 
     while ((opt = getopt_long(argc, argv, "r:h:d:u:p:c:t:f", longopts, nullptr)) != -1) {
         switch(opt){
@@ -219,17 +221,12 @@ int main(int argc, char* argv[]) {
             case 't': num_threads = std::stoi(optarg); break;
             case 'f': force_recalc = true; break;
             default:
-                std::cerr << "Usage: " << argv[0]
-                          << " -r root_dir [-h host] [-d dbname] [-u user] [-p password] "
-                          << "[-c csv_path] [-t threads] [--force]\n";
+                std::cerr << "Usage: " << argv[0] << " -r root_dir [-h host] [-d dbname] [-u user] [-p password] [-c csv_path] [-t threads] [--force]\n";
                 return 1;
         }
     }
 
-    if (root_dir.empty()) {
-        std::cerr << "Root directory is required (-r).\n";
-        return 1;
-    }
+    if (root_dir.empty()) { std::cerr << "Root directory is required (-r).\n"; return 1; }
 
     PGconn* conn = connect_db(host, dbname, user, password);
     if (!conn) return 1;
@@ -256,8 +253,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::thread> threads;
     for (int i = 0; i < num_threads; ++i)
-        threads.emplace_back(worker, std::ref(q), std::ref(q_mtx),
-                             std::ref(root_dir), std::ref(results), std::ref(res_mtx));
+        threads.emplace_back(worker, std::ref(q), std::ref(q_mtx), std::ref(root_dir), std::ref(results), std::ref(res_mtx));
 
     for (auto& t : threads) t.join();
 

@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy import (
-    Column, PrimaryKeyConstraint, String, Integer, BigInteger, Text, Float, TIMESTAMP, UniqueConstraint,
+    Column, LargeBinary, PrimaryKeyConstraint, String, Integer, BigInteger, Text, Float, TIMESTAMP, UniqueConstraint,
     ForeignKey, Index, ARRAY, Boolean, CheckConstraint
 )
 from sqlalchemy.dialects.postgresql import UUID, REAL, CHAR
@@ -29,7 +29,7 @@ class Image(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     dataset_id = Column(UUID(as_uuid=True), ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False)
     file_path = Column(Text, nullable=False)  # 相对路径
-    file_hash = Column(CHAR(64))
+    file_hash = Column(LargeBinary)           # 改成 BYTEA
     file_size = Column(BigInteger)
     file_format = Column(Text)
     last_modified = Column(TIMESTAMP(timezone=True))

@@ -20,7 +20,7 @@ CREATE TABLE images (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),   -- 图片唯一标识
   dataset_id UUID NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
   file_path TEXT NOT NULL,                          -- 相对路径
-  file_hash CHAR(64),                               -- SHA256 哈希
+  file_hash BYTEA,                                  -- SHA256 哈希
   file_size BIGINT,                                 -- 文件大小
   file_format TEXT,                                 -- 文件格式
   last_modified TIMESTAMPTZ,                        -- 文件最后修改时间
