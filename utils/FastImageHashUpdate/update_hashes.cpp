@@ -125,9 +125,10 @@ void write_csv(const std::string& csv_path, const std::vector<ImageRecord>& data
 }
 
 // ----------------------
-// 导入 CSV 并更新 PostgreSQL
+// 导入 CSV 并更新 PostgreSQL (使用 COPY FROM STDIN)
 // ----------------------
 void import_csv_update(PGconn* conn, const std::string& csv_path) {
+    // 1. 创建临时表
     PGresult *res = PQexec(conn, "CREATE TEMP TABLE tmp_hashes (id UUID PRIMARY KEY, file_hash CHAR(64));");
     if (PQresultStatus(res) != PGRES_COMMAND_OK) {
         std::cerr << "Create temp table failed: " << PQerrorMessage(conn) << "\n";
@@ -136,15 +137,49 @@ void import_csv_update(PGconn* conn, const std::string& csv_path) {
     }
     PQclear(res);
 
-    std::string copy_sql = "COPY tmp_hashes(id, file_hash) FROM '" + csv_path + "' WITH (FORMAT csv);";
-    res = PQexec(conn, copy_sql.c_str());
-    if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-        std::cerr << "COPY failed: " << PQerrorMessage(conn) << "\n";
+    // 2. 启动 COPY ... FROM STDIN
+    res = PQexec(conn, "COPY tmp_hashes(id, file_hash) FROM STDIN WITH (FORMAT csv);");
+    if (PQresultStatus(res) != PGRES_COPY_IN) {
+        std::cerr << "COPY FROM STDIN failed to start: " << PQerrorMessage(conn) << "\n";
         PQclear(res);
         return;
     }
     PQclear(res);
 
+    // 3. 逐行读取 CSV 文件并写入数据库
+    std::ifstream fin(csv_path);
+    if (!fin) {
+        std::cerr << "Failed to open CSV file: " << csv_path << "\n";
+        PQputCopyEnd(conn, "error");
+        return;
+    }
+
+    std::string line;
+    while (std::getline(fin, line)) {
+        line.push_back('\n'); // COPY 协议需要行尾换行
+        if (PQputCopyData(conn, line.c_str(), static_cast<int>(line.size())) <= 0) {
+            std::cerr << "PQputCopyData failed: " << PQerrorMessage(conn) << "\n";
+            PQputCopyEnd(conn, "error");
+            return;
+        }
+    }
+    fin.close();
+
+    // 4. 通知结束
+    if (PQputCopyEnd(conn, nullptr) <= 0) {
+        std::cerr << "PQputCopyEnd failed: " << PQerrorMessage(conn) << "\n";
+        return;
+    }
+
+    // 5. 获取 COPY 的结果
+    while ((res = PQgetResult(conn)) != nullptr) {
+        if (PQresultStatus(res) != PGRES_COMMAND_OK) {
+            std::cerr << "COPY IN result error: " << PQerrorMessage(conn) << "\n";
+        }
+        PQclear(res);
+    }
+
+    // 6. 更新 images 表
     res = PQexec(conn,
         "UPDATE images i "
         "SET file_hash = t.file_hash "
@@ -164,10 +199,16 @@ int main(int argc, char* argv[]) {
     std::string root_dir, host="localhost", dbname="your_db", user="your_user", password="your_password";
     std::string csv_path="/tmp/image_hashes.csv";
     int num_threads = 8;
+    bool force_recalc = false;
 
     // 命令行解析
     int opt;
-    while ((opt = getopt(argc, argv, "r:h:d:u:p:c:t:")) != -1) {
+    const struct option longopts[] = {
+        {"force", no_argument, nullptr, 'f'},
+        {nullptr, 0, nullptr, 0}
+    };
+
+    while ((opt = getopt_long(argc, argv, "r:h:d:u:p:c:t:f", longopts, nullptr)) != -1) {
         switch(opt){
             case 'r': root_dir = optarg; break;
             case 'h': host = optarg; break;
@@ -176,8 +217,11 @@ int main(int argc, char* argv[]) {
             case 'p': password = optarg; break;
             case 'c': csv_path = optarg; break;
             case 't': num_threads = std::stoi(optarg); break;
+            case 'f': force_recalc = true; break;
             default:
-                std::cerr << "Usage: " << argv[0] << " -r root_dir [-h host] [-d dbname] [-u user] [-p password] [-c csv_path] [-t threads]\n";
+                std::cerr << "Usage: " << argv[0]
+                          << " -r root_dir [-h host] [-d dbname] [-u user] [-p password] "
+                          << "[-c csv_path] [-t threads] [--force]\n";
                 return 1;
         }
     }
@@ -190,6 +234,16 @@ int main(int argc, char* argv[]) {
     PGconn* conn = connect_db(host, dbname, user, password);
     if (!conn) return 1;
 
+    // 检查 CSV 是否存在
+    std::ifstream test_csv(csv_path);
+    if (test_csv.good() && !force_recalc) {
+        std::cout << "CSV file already exists, skip computing hashes. Use --force to recalc.\n";
+        import_csv_update(conn, csv_path);
+        PQfinish(conn);
+        return 0;
+    }
+
+    // CSV 不存在 或 强制重新计算
     auto images = fetch_images(conn);
     std::cout << "Found " << images.size() << " images without hash.\n";
 
@@ -202,7 +256,8 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::thread> threads;
     for (int i = 0; i < num_threads; ++i)
-        threads.emplace_back(worker, std::ref(q), std::ref(q_mtx), std::ref(root_dir), std::ref(results), std::ref(res_mtx));
+        threads.emplace_back(worker, std::ref(q), std::ref(q_mtx),
+                             std::ref(root_dir), std::ref(results), std::ref(res_mtx));
 
     for (auto& t : threads) t.join();
 
