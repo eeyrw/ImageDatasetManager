@@ -32,6 +32,7 @@ CREATE TABLE images (
   watermark_prob REAL,                              -- 水印概率
   quality_score REAL,                               -- 质量评分
   aesthetic_score REAL,                             -- 审美评分
+  image_embedding REAL[],                           -- 图片嵌入
 
   -- 回收站相关字段
   is_deleted BOOLEAN DEFAULT FALSE,                 -- 是否删除
