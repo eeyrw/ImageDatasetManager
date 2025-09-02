@@ -183,7 +183,7 @@ def process_table(df: pl.DataFrame, mapping: Dict[str, Any], context: Dict[str, 
     # 针对主键去重
     if pk_cols:
         df_proc = df_proc.unique(subset=pk_cols)
-        
+
     records = df_proc.select(target_columns).to_numpy().tolist()
     return records, target_columns
 
@@ -216,7 +216,13 @@ images_mapping = {
     "rules": {
         "IMG": "file_path",
         "W": "width",
-        "H": "height"
+        "H": "height",
+        'A_CENTER':'semantic_center',
+        'A_EAT':'aesthetic_eat',
+        'HAS_WATERMARK':'watermark_prob',
+        'Q512':'quality_score',
+        'A':'aesthetic_score',
+        'IMG_EMBD':'image_embedding'
     },
     "primaryKey": {
         "columns": ["image_id"]
