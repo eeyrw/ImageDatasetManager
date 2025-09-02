@@ -346,9 +346,9 @@ class ParquetSyncer:
 
         # 按目标列选取并转换为 records（list of tuples）
         # 注意：如果某些列不存在 above 将在 earlier 的检查阶段触发异常
-        records = df_proc.select(target_columns).to_numpy().tolist()
+        records = df_proc.select(target_columns)
         # 将内部 list 转为 tuple（execute_values 接受 iterable of sequences，这里 list 也可）
-        records = [tuple(r) for r in records]
+        records = [tuple(r.to_list()) for r in records]
         return records, target_columns
 
     # ---------- 主流程 ----------
@@ -497,7 +497,7 @@ tags_mapping = {
     "ignore_if_missing": True
 }
 
-ALL_MAPPINGS = [images_mapping, poses_mapping, captions_mapping, tags_mapping]
+ALL_MAPPINGS = [images_mapping]#, poses_mapping, captions_mapping, tags_mapping]
 
 
 # --------------------------- CLI / main 使用示例 ---------------------------
@@ -505,7 +505,7 @@ if __name__ == "__main__":
     # 你可以在这里修改 root_dataset_dir 与 dry_run
     root_dataset_dir = "/mnt/yuansnas/Backup/big_server/ds/DiffusionDataset"
     syncer = ParquetSyncer(db_config=DB_CONFIG,
-                           root_dataset_dir=root_dataset_dir, dry_run=True)
+                           root_dataset_dir=root_dataset_dir, dry_run=False)
 
     # 运行（dry-run=True：仅查询、打印样例、不会写入）
     syncer.run(ALL_MAPPINGS)
