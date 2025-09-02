@@ -89,8 +89,36 @@ def generate_pose_index(df: pl.DataFrame, col: str, context: Dict) -> pl.DataFra
     return df
 
 def explode_caption(df: pl.DataFrame, col: str, context: Dict) -> pl.DataFrame:
-    """CAP/HQ_CAP explode，每行一条 caption"""
-    return explode_list_field(df, col)
+    """
+    将 CAP/HQ_CAP 列按行展开，并为每条 caption 标注类型:
+      - CAP    -> type = "generic"
+      - HQ_CAP -> type = "hq"
+
+    产出列：
+      - 保留原列 (CAP 或 HQ_CAP)
+      - 新增 caption (统一的文本列，来自原列的值，去掉首尾空白)
+      - 新增 type    (上面映射得到)
+      - 如果需要且缺失，利用 context 生成 image_id
+    """
+    type_map = {"CAP": "generic", "HQ_CAP": "hq"}
+    ctype = type_map.get(col, "generic")
+
+    out = df.explode(col).drop_nulls()
+
+    # 统一文本列命名，并清洗空白
+    out = out.with_columns(
+        pl.col(col).cast(pl.Utf8).str.strip().alias("caption"),
+    )
+
+    # 标注类型列
+    out = out.with_columns(pl.lit(ctype).alias("type"))
+
+    # 如需补齐 image_id（当后续表需要且还未生成）
+    if "dataset_id" in context and "generate_image_id" in context and "image_id" not in out.columns:
+        out = context["generate_image_id"](out, context)
+
+    return out
+
 
 # --------------------------- TableMapping 处理 ---------------------------
 def process_table(df: pl.DataFrame, mapping: Dict[str, Any], context: Dict[str, Any]={}) -> (List[tuple], List[str]):
@@ -174,13 +202,7 @@ images_mapping = {
     "rules": {
         "IMG": "file_path",
         "W": "width",
-        "H": "height",
-        "FILE_HASH": "file_hash",
-        "FILE_SIZE": "file_size",
-        "DBRU_TAG": {
-            "target": ["tags"],
-            "func": lambda df, col, ctx: process_tags(df, col)
-        }
+        "H": "height"
     },
     "primaryKey": {
         "columns": ["image_id"],
@@ -210,16 +232,16 @@ captions_mapping = {
     "table": "image_captions",
     "rules": {
         "CAP": {
-            "target": ["caption"],
+            "target": ["type","caption"],
             "func": explode_caption
         },
         "HQ_CAP": {
-            "target": ["caption"],
+            "target": ["type","caption"],
             "func": explode_caption
         }
     },
     "primaryKey": {
-        "columns": ["image_id","caption"]
+        "columns": ["image_id","type","caption"]
     },
     "update_mode": "overwrite",
     "ignore_if_missing": True
