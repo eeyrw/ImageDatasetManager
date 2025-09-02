@@ -258,7 +258,7 @@ class ParquetSyncer:
                     [f"{c}=EXCLUDED.{c}" for c in non_pk_cols])
             elif update_mode == "null_only":
                 update_sql = ", ".join(
-                    [f"{c}=COALESCE(EXCLUDED.{c},{c})" for c in non_pk_cols])
+                    [f"{c}=COALESCE(EXCLUDED.{c},{table_name}.{c})" for c in non_pk_cols])
             else:
                 raise ValueError(
                     "update_mode must be 'overwrite' or 'null_only'")
@@ -317,6 +317,12 @@ class ParquetSyncer:
             else:
                 raise ValueError(f"Invalid rule type for '{parquet_col}'")
 
+        if mapping["table"] == "images" and "dataset_id" in context:
+            df_proc = df_proc.with_columns(
+                pl.lit(context["dataset_id"]).alias("dataset_id")
+            )
+
+
         # 主键生成（如果定义了主键生成函数）
         pk_info = mapping.get("primaryKey", {})
         pk_cols = pk_info.get("columns", [])
@@ -346,9 +352,9 @@ class ParquetSyncer:
 
         # 按目标列选取并转换为 records（list of tuples）
         # 注意：如果某些列不存在 above 将在 earlier 的检查阶段触发异常
-        records = df_proc.select(target_columns)
+        records = df_proc.select(target_columns).rows()
         # 将内部 list 转为 tuple（execute_values 接受 iterable of sequences，这里 list 也可）
-        records = [tuple(r.to_list()) for r in records]
+        #records = [tuple(r.to_list()) for r in records]
         return records, target_columns
 
     # ---------- 主流程 ----------
@@ -431,6 +437,7 @@ images_mapping = {
     "rules": {
         "IMG": "file_path",
         "image_id": "id",  # ✅ 新增
+        "dataset_id": "dataset_id",  # 仅 images 表
         "W": "width",
         "H": "height",
         'A_CENTER': 'semantic_center',
