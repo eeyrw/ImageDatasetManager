@@ -51,19 +51,34 @@ def get_or_create_dataset(cur, dataset_root_dir: str, parquet_dir: Path) -> str:
     """, (dataset_name, rel_dir_path))
     return cur.fetchone()[0]
 
-# --------------------------- image_id 生成 ---------------------------
-def generate_image_id(df: pl.DataFrame, context: Dict) -> pl.DataFrame:
-    """根据 dataset_id + IMG 生成 image_id UUID"""
-    dataset_id = context["dataset_id"]
-    def _make_uuid(img_path: str) -> str:
-        name = f"{dataset_id}/{img_path}"
-        h = hashlib.sha1(name.encode("utf-8")).hexdigest()
-        return str(uuid.UUID(h[:32]))
-    return df.with_columns(pl.col("IMG").apply(_make_uuid).alias("image_id"))
+def generate_or_fetch_image_id(cur, df: pl.DataFrame, dataset_id: str) -> pl.DataFrame:
+    """
+    生成 image_id：
+      - 先从数据库获取已有的 image_id
+      - 没有的再生成新的 UUID
+    """
+    # parquet 的 IMG 列
+    img_paths = df["IMG"].to_list()
 
-def primaryKeyGenFunc(df: pl.DataFrame, context: Dict) -> pl.DataFrame:
-    """通用主键生成函数"""
-    return generate_image_id(df, context)
+    # 查询数据库已有 image_id
+    cur.execute("""
+        SELECT file_path, image_id
+        FROM images
+        WHERE dataset_id = %s AND file_path = ANY(%s)
+    """, (dataset_id, img_paths))
+    existing = dict(cur.fetchall())  # {file_path: image_id}
+
+    def _get_or_create_uuid(img_path: str) -> str:
+        if img_path in existing:
+            return existing[img_path]
+        else:
+            # 原来的生成逻辑
+            h = hashlib.sha1(f"{dataset_id}/{img_path}".encode("utf-8")).hexdigest()
+            return str(uuid.UUID(h[:32]))
+
+    df = df.with_columns(pl.col("IMG").apply(_get_or_create_uuid).alias("image_id"))
+    return df
+
 
 # --------------------------- 复杂字段处理 ---------------------------
 def explode_list_field(df: pl.DataFrame, col: str) -> pl.DataFrame:
@@ -83,7 +98,7 @@ def generate_pose_index(df: pl.DataFrame, col: str, context: Dict) -> pl.DataFra
     df = df.explode(col).drop_nulls()
     for fld in ["BBOX","INVLD_KPTS_IDX","KPTS_X","KPTS_Y"]:
         df = df.with_columns(pl.col(col).struct.field(fld).alias(fld.lower()))
-    df = df.with_columns(pl.arange(0, pl.count()).over("IMG").alias("pose_index"))
+    df = df.with_columns(pl.arange(0, pl.count()).over("image_id").alias("pose_index"))
     if "dataset_id" in context and "generate_image_id" in context:
         df = context["generate_image_id"](df, context)
     return df
@@ -98,7 +113,6 @@ def explode_caption(df: pl.DataFrame, col: str, context: Dict) -> pl.DataFrame:
       - 保留原列 (CAP 或 HQ_CAP)
       - 新增 caption (统一的文本列，来自原列的值，去掉首尾空白)
       - 新增 type    (上面映射得到)
-      - 如果需要且缺失，利用 context 生成 image_id
     """
     type_map = {"CAP": "generic", "HQ_CAP": "hq"}
     ctype = type_map.get(col, "generic")
@@ -112,10 +126,6 @@ def explode_caption(df: pl.DataFrame, col: str, context: Dict) -> pl.DataFrame:
 
     # 标注类型列
     out = out.with_columns(pl.lit(ctype).alias("type"))
-
-    # 如需补齐 image_id（当后续表需要且还未生成）
-    if "dataset_id" in context and "generate_image_id" in context and "image_id" not in out.columns:
-        out = context["generate_image_id"](out, context)
 
     return out
 
@@ -205,8 +215,7 @@ images_mapping = {
         "H": "height"
     },
     "primaryKey": {
-        "columns": ["image_id"],
-        "func": primaryKeyGenFunc
+        "columns": ["image_id"]
     },
     "update_mode": "null_only",
     "ignore_if_missing": True
@@ -221,8 +230,7 @@ poses_mapping = {
         }
     },
     "primaryKey": {
-        "columns": ["image_id","pose_index"],
-        "func": primaryKeyGenFunc
+        "columns": ["image_id","pose_index"]
     },
     "update_mode": "overwrite",
     "ignore_if_missing": True
@@ -251,12 +259,12 @@ tags_mapping = {
     "table": "image_tags",
     "rules": {
         "DBRU_TAG": {
-            "target": ["IMG","tags"],
+            "target": ["tags"],
             "func": process_tags
         }
     },
     "primaryKey": {
-        "columns": ["IMG","tags"]
+        "columns": ["image_id"]
     },
     "update_mode": "overwrite",
     "ignore_if_missing": True
@@ -273,13 +281,17 @@ if __name__ == "__main__":
             for pq_file in tqdm(parquet_files, desc="Sync Parquet Files"):
                 # 获取 dataset_id
                 dataset_id = get_or_create_dataset(cur, root_dataset_dir, pq_file.parent)
-                context = {
-                    "dataset_id": dataset_id,
-                    "generate_image_id": generate_image_id
-                }
 
                 # 读取 Parquet
                 df = pl.read_parquet(pq_file)
+
+                # 先生成 image_id
+                df = generate_or_fetch_image_id(cur, df, dataset_id)
+
+                # 更新 context，让各 mapping 直接复用
+                context = {
+                    "dataset_id": dataset_id
+                }
 
                 # 同步 images
                 records, columns = process_table(df, images_mapping, context)
