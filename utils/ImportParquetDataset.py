@@ -81,10 +81,6 @@ def generate_or_fetch_image_id(cur, df: pl.DataFrame, dataset_id: str) -> pl.Dat
 
 
 # --------------------------- 复杂字段处理 ---------------------------
-def explode_list_field(df: pl.DataFrame, col: str) -> pl.DataFrame:
-    """将 list/array 列拆成多行"""
-    return df.explode(col).drop_nulls()
-
 def process_tags(df: pl.DataFrame, col: str) -> pl.DataFrame:
     """将逗号分隔的字符串列拆成 tags list"""
     return df.with_columns(
