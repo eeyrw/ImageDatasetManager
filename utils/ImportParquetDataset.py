@@ -180,6 +180,10 @@ def process_table(df: pl.DataFrame, mapping: Dict[str, Any], context: Dict[str, 
         if pk not in target_columns:
             target_columns.append(pk)
 
+    # 针对主键去重
+    if pk_cols:
+        df_proc = df_proc.unique(subset=pk_cols)
+        
     records = df_proc.select(target_columns).to_numpy().tolist()
     return records, target_columns
 
