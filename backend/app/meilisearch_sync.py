@@ -71,23 +71,24 @@ async def sync_to_meilisearch():
 
             docs.append({
                 "id": str(img.id),
-                "dataset_id": str(img.dataset_id),
-                "file_path": img.file_path,
-                "dataset_dir": dataset_dir,
-                "captions": captionDict,
-                "tags": img.tags.tags if img.tags else [],
-                "width": img.width,
-                "height": img.height,
-                "quality_score": img.quality_score,
-                "aesthetic_score": img.aesthetic_score,
-                "aesthetic_eat": img.aesthetic_eat,
-                "watermark_prob": img.watermark_prob,
-                "url": url,
-                "raw_size_image_url": raw_size_image_url,
-                "poses": poses,
+                # "dataset_id": str(img.dataset_id),
+                # "file_path": img.file_path,
+                # "dataset_dir": dataset_dir,
+                # "captions": captionDict,
+                # "tags": img.tags.tags if img.tags else [],
+                # "width": img.width,
+                # "height": img.height,
+                # "quality_score": img.quality_score,
+                # "aesthetic_score": img.aesthetic_score,
+                # "aesthetic_eat": img.aesthetic_eat,
+                # "watermark_prob": img.watermark_prob,
+                # "url": url,
+                # "raw_size_image_url": raw_size_image_url,
+                # "poses": poses,
+                "_vectors": {"dinov3": img.image_embedding},
             })
         print(f"Syncing {len(docs)} images to Meilisearch...")
-        index.add_documents_in_batches(docs)
+        index.update_documents_in_batches(docs)
         print("Done.")
 
 if __name__ == "__main__":
