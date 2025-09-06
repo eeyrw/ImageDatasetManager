@@ -41,6 +41,7 @@ class Image(Base):
     watermark_prob = Column(REAL)
     quality_score = Column(REAL)
     aesthetic_score = Column(REAL)
+    image_embedding = Column(ARRAY(REAL))
 
     # 回收站相关字段
     is_deleted = Column(Boolean, nullable=False, server_default="false")
