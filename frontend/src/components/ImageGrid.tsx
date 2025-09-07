@@ -1,10 +1,11 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState, useRef } from 'react';
 import Navbar from './Navbar';
 import ImageGallery, { ImageInfo } from './ImageGallery';
 import { Button, Collapse, Flex, Input, Modal, Select, Space, Switch } from 'antd';
 import { MeiliSearch } from 'meilisearch';
 import RangeSlider, { RangeSliderStatus, SliderMode } from "./RangeSlider";
 import { buildMeiliFilters } from './Utils';
+import UnifiedSearchBox, { RefImageInfo } from './UnifiedSearchBox';
 
 const { Panel } = Collapse;
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -39,6 +40,8 @@ export default function ImageGrid({
   const [attributes, setAttributes] = useState<string[]>([]);
   const [selectedAttrs, setSelectedAttrs] = useState<string[]>([]);
 
+  const [refImageInfo, setRefImageInfo] = useState<RefImageInfo | null>(null);
+
   // 每个字段对应一个 RangeSliderStatus
   const [sliders, setSliders] = useState<Record<string, RangeSliderStatus>>({
     aesthetic_eat: {
@@ -72,6 +75,14 @@ export default function ImageGrid({
     setSliders((prev) => ({ ...prev, [field]: status }));
   };
 
+
+  const handleFindSimilar = (img: ImageInfo) => {
+    setRefImageInfo({
+      url:img.url,
+      embedding:img._vectors.dinov3.embeddings[0]
+    });
+  }
+
   // 生成 MeiliSearch filter
   const meiliFilter = buildMeiliFilters(sliders);
 
@@ -104,12 +115,20 @@ export default function ImageGrid({
         // 构造 filter: dataset_id IN [xxx]
         const filter = '(' + externalSelectedIds.map(id => `dataset_id = "${id}"`).join(' OR ') + ') ' + (meiliFilter ? 'AND (' + meiliFilter + ')' : '');
 
-        const res = await searchClient.index('images').search(query, {
+        let searchOption: Record<string, any> = {
           filter,
           limit: pageSize,
           offset: page * pageSize,
           attributesToSearchOn: selectedAttrs,
-        });
+          retrieveVectors: true,
+        }
+
+        if (refImageInfo?.embedding && refImageInfo.embedding.length === 1024) {
+          searchOption["hybrid"] = { embedder: "dinov3"};
+          searchOption["vector"] = refImageInfo.embedding;
+        }
+        const res = await searchClient.index('images').search(query,
+          searchOption);
 
         const formatted = res.hits.map(hit => ({
           ...hit,
@@ -133,7 +152,7 @@ export default function ImageGrid({
     };
 
     fetchData();
-  }, [collection, externalSelectedIds, selectedAttrs, query, meiliFilter, page, pageSize]);
+  }, [collection, externalSelectedIds, selectedAttrs, query, meiliFilter, refImageInfo, page, pageSize]);
 
   useEffect(() => {
     setPage(0);
@@ -194,14 +213,24 @@ export default function ImageGrid({
               options={attributes.map(attr => ({ value: attr, label: attr }))}
               placeholder="选择搜索字段"
             />
-            <Input.Search
+                      <UnifiedSearchBox
+            query={query}
+            onQueryChange={setQuery}
+            refImage={refImageInfo}
+            onRefImageChange={setRefImageInfo}
+            onSearch={(q, refImg) => {
+              setQuery(q);
+              setRefImageInfo(refImg);
+            }}
+          />
+            {/* <Input.Search
               placeholder="搜索图片标题或描述"
               value={query}
               onChange={e => setQuery(e.target.value)}
               onSearch={val => setQuery(val)}
               enterButton
               allowClear
-            />
+            /> */}
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.entries(sliders).map(([key, status]) => (
@@ -213,6 +242,9 @@ export default function ImageGrid({
               />
             ))}
           </div>
+
+          {/* <SimilarImageSearchBox ref={searchRef} onSearch={handleSearch} /> */}
+
         </Panel>
       </Collapse>
 
@@ -283,6 +315,7 @@ export default function ImageGrid({
             setSelectedImageIds(newIds);
           }}
           onClickImage={onClickImage}
+          onFindSimilar={handleFindSimilar}
           selectable={true}
           highlightEnabled={highlightEnabled}
         />

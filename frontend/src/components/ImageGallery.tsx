@@ -11,7 +11,7 @@ export type ImageInfo = {
   caption: string;
   size: { w: number; h: number };
   path: string;
-  poses:[];
+  poses: [];
 };
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
   selectedIds: string[];
   onSelectedIdsChange: (ids: string[]) => void;
   onClickImage: (image: ImageInfo) => void;
+  onFindSimilar: (image: ImageInfo) => void;
   selectable?: boolean;
   highlightEnabled?: boolean;
 };
@@ -28,6 +29,7 @@ export default function ImageGallery({
   selectedIds,
   onSelectedIdsChange,
   onClickImage,
+  onFindSimilar,
   selectable = false,
   highlightEnabled = true,
 }: Props) {
@@ -77,6 +79,11 @@ export default function ImageGallery({
                     onClickImage(img);
                     open();
                   }}
+                  onFindSimilar={
+                    () => {
+                      onFindSimilar(img);
+                    }
+                  }
                   selectable={selectable}
                 />
               )}

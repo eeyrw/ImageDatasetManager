@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Checkbox, Rate } from "antd";
+import { Checkbox, Rate, Button, Tooltip } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 
 type Props = {
   src: string;
@@ -8,25 +9,34 @@ type Props = {
   onClick?: () => void;
   highlighted?: boolean;
   selectable?: boolean;
-  rating?: number | null;        // 当前评分，null 表示未评分
+  rating?: number | null;
   onRatingChange?: (val: number) => void;
+  onFindSimilar?: () => void;   // 新增：点击“找相似图”时触发
 };
 
 const ImageItem = React.forwardRef<HTMLDivElement, Props>(
-  ({
-    src,
-    checked = false,
-    onCheckedChange,
-    onClick,
-    highlighted = true,
-    selectable = true,
-    rating = null,
-    onRatingChange,
-  }, ref) => {
+  (
+    {
+      src,
+      checked = false,
+      onCheckedChange,
+      onClick,
+      highlighted = true,
+      selectable = true,
+      rating = null,
+      onRatingChange,
+      onFindSimilar,
+    },
+    ref
+  ) => {
     const [hoverValue, setHoverValue] = useState<number | null>(null);
 
     return (
-      <div className={`image-item ${highlighted ? "" : "dimmed"}`} ref={ref} style={{ position: 'relative' }}>
+      <div
+        className={`image-item ${highlighted ? "" : "dimmed"}`}
+        ref={ref}
+        style={{ position: "relative" }}
+      >
         {selectable && (
           <Checkbox
             checked={checked}
@@ -35,18 +45,34 @@ const ImageItem = React.forwardRef<HTMLDivElement, Props>(
             onClick={(e) => e.stopPropagation()}
           />
         )}
+
         <img
           src={src}
           loading="lazy"
           alt=""
           onClick={onClick}
-          style={{ cursor: 'zoom-in', display: 'block', width: '100%' }}
+          style={{ cursor: "zoom-in", display: "block", width: "100%" }}
         />
 
-        {/* 五颗星评分 */}
-        <div style={{ position: 'absolute', bottom: 8, left: 8 }}>
+        {/* 右上角：找相似图按钮 */}
+        <div style={{ position: "absolute", top: 8, right: 8 }}>
+          <Tooltip title="寻找类似图片">
+            <Button
+              shape="circle"
+              icon={<SearchOutlined />}
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation(); // 防止触发 onClick
+                onFindSimilar?.();
+              }}
+            />
+          </Tooltip>
+        </div>
+
+        {/* 左下角：五颗星评分 */}
+        <div style={{ position: "absolute", bottom: 8, left: 8 }}>
           <Rate
-            value={hoverValue ?? rating ?? 0} // hover 时显示 hoverValue，未评分时显示 0
+            value={hoverValue ?? rating ?? 0}
             onChange={(val) => onRatingChange?.(val)}
             onHoverChange={(val) => setHoverValue(val)}
             allowHalf
